@@ -42,6 +42,30 @@ Examples
   * `jsus . Output`
   * Look at what Output directory contains
 
+Use with Rails
+==============
+To play with jsus and rails you need just:
+ 
+    rails new jsus_test
+    cd jsus_test
+    mkdir -p public/javascripts/Source
+    git clone git://github.com/Inviz/mootools-ckeditor.git public/javascripts/Source
+
+Add in Gemfile:
+`gem 'jsus'`
+
+So you can use it like http://localhost:3000/javascripts/jsus/include/CKEditor.js
+
+You can override default settings creating intializer "config/initializers/jsus.rb"
+
+    Jsus::Middleware.settings = {
+      :cache         => true,
+      :cache_path    => "#{Rails.root}/public/javascripts/jsus/require",
+      :packages_dir  => "#{Rails.root}/public/javascripts/Source",
+      :cache_pool    => false,
+      :includes_root => "#{Rails.root}/public/javascripts/Source"
+    }
+
 Plans
 =====
 
