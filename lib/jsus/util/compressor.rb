@@ -13,11 +13,11 @@ module Jsus
         # @api public
         def compress(source, options = {})
           method = options.fetch(:method, :yui)
-          @result = case method
-            when :uglifier then compress_with_uglifier(source)
-            when :frontcompiler then compress_with_frontcompiler(source)
-            when :closure then compress_with_closure(source)
-            when :yui then compress_with_yui(source)
+          @result = case method.to_s
+            when "uglifier" then compress_with_uglifier(source)
+            when "frontcompiler" then compress_with_frontcompiler(source)
+            when "closure" then compress_with_closure(source)
+            when "yui" then compress_with_yui(source)
             else
               Jsus.logger.error "tried to use unavailable method #{method.inspect}"
               source
