@@ -67,8 +67,12 @@ cli = OptionParser.new do |opts|
     options[:postproc] = postprocs
   end
 
-  opts.on('--compress', 'compresses resulting file with YUI compressor') do
+  opts.on('--compress', 'compresses resulting file') do
     options[:compress] = true
+  end
+
+  opts.on('--compression-method [METHOD]', 'compression method: yui, closure, frontcompiler or uglifier') do |method|
+    options[:compression_method] = method
   end
 
   opts.on('--no-cycle-search', 'disables search for circular dependencies which may take quite some time during compilation') do

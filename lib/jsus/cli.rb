@@ -104,7 +104,8 @@ module Jsus
     end
 
     def compress_package(content)
-      compressed_content = Jsus::Util::Compressor.compress(content)
+      compression_method = options.fetch(:compression_method, :yui)
+      compressed_content = Jsus::Util::Compressor.compress(content, :method => compression_method)
       if compressed_content != ""
         @compression_ratio = compressed_content.size.to_f / content.size.to_f
       else
