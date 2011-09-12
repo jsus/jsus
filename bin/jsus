@@ -2,379 +2,120 @@
 require 'rubygems'
 
 require 'pathname'
+
 begin
   gem_home = Pathname.new(ENV["GEM_HOME"]).realpath.to_s
-  current_dir = File.dirname(Pathname.new(__FILE__).realpath.to_s)
-  if current_dir.index(gem_home) != 0 && File.exists?(current_dir + '/../lib/jsus.rb')
+  current_dir = Pathname.new(__FILE__).realpath.dirname
+  if current_dir.to_s.index(gem_home) != 0 && current_dir.join('../lib/jsus.rb').exist?
     # If we are outside gem home,
     # override whatever they got there
     # with local version of jsus
-    $:.unshift File.expand_path(current_dir + "/../lib")
+    $:.unshift((current_dir + "../lib").expand_path.to_s)
   end
 rescue Exception => e
+  raise e
   # Something weird happened during our checks,
   # but it's probably nothing.
 end
+
 require 'jsus'
-
-require "fileutils"
 require "optparse"
+require "logger"
 
-module Jsus
-  class CLI
-    class <<self
-      attr_accessor :cli_options
+Jsus.logger = Logger.new(STDOUT)
 
-      def parse_command_line!
-        options = {}
-        cli = OptionParser.new do |opts|
-          opts.banner = "jsus #{Jsus.version}. Usage: jsus [options] <input_dir> <output_dir>"
+options = {}
+cli = OptionParser.new do |opts|
+  opts.banner = "jsus #{Jsus.version}. Usage: jsus [options] <input_dir> <output_dir>"
 
-          opts.on('-i', '--input-directory [DIR]', '[DEPRECATED] path to input directory ') do |dir|
-            $stderr.puts "DEPRECATION NOTICE: please do not use -i command-line argument"
-            options[:input_dir] = dir
-          end
+  opts.on('-i', '--input-directory [DIR]', '[DEPRECATED] path to input directory ') do |dir|
+    $stderr.puts "DEPRECATION NOTICE: please do not use -i command-line argument"
+    options[:input_dir] = dir
+  end
 
-          opts.on('-o', '--output-directory [DIR]', '[DEPRECATED] path to output directory ') do |dir|
-            $stderr.puts "DEPRECATION NOTICE: please do not use -o command-line argument"
-            options[:output_dir] = dir
-          end
+  opts.on('-o', '--output-directory [DIR]', '[DEPRECATED] path to output directory ') do |dir|
+    $stderr.puts "DEPRECATION NOTICE: please do not use -o command-line argument"
+    options[:output_dir] = dir
+  end
 
-          opts.on('-d', '--with-dependencies [DEPS]', 'path to directory containing dependency packages')  do |dir|
-            options[:deps_dir] = dir
-          end
+  opts.on('-d', '--with-dependencies [DEPS]', 'path to directory containing dependency packages')  do |dir|
+    options[:deps_dir] = dir
+  end
 
-          opts.on('-g', '--generate-includes [ROOT]', 'generates includes.js file that you may use for ad-hoc requiring of dependencies, defaults to output directory') do |dir|
-            options[:generate_includes] = true
-            options[:includes_root] = dir
-          end
+  opts.on('-g', '--generate-includes [ROOT]', 'generates includes.js file that you may use for ad-hoc requiring of dependencies, defaults to output directory') do |dir|
+    options[:generate_includes] = true
+    options[:includes_root] = dir
+  end
 
-          opts.on('--generate-docs [*CLASSES]', Array, "generate docs for some of the sources. When given empty array, defaults to /**/*") do |docs|
-            if !docs
-              options[:documented_classes] = ["/**/*"]
-            else
-              options[:documented_classes] = docs
-            end
-          end
-
-          opts.on('--no-syntax-highlight', 'if you turned on docs generation, it will use syntax highlighting by default. This option prevents it') do
-            options[:no_syntax_highlight] = true
-          end
-
-          opts.on('--validate-with [*VALIDATORS]', Array, 'performs a check against some of the validators. Available validators: mooforge') do |validators|
-            options[:validators] = (validators || []).map {|v| v.downcase }
-          end
-
-          opts.on('--postproc [*PROCESSORS]', Array, 'performs postprocessing. Available postprocs:\n* moocompat12 -- removes mootools 1.2compat tags and their contents\n* mooltIE8 -- removes mootools ltIE8 compat tags and their contents') do |postprocs|
-            options[:postproc] = postprocs
-          end
-
-          opts.on('--compress', 'compresses resulting file with YUI compressor') do
-            options[:compress] = true
-          end
-
-          opts.on('--no-cycle-search', 'disables search for circular dependencies which may take quite some time during compilation') do
-            Jsus.look_for_cycles = false
-          end
-
-          opts.on_tail('-v', '--verbose', 'verbose mode, shows various debug messages') do
-            Jsus.verbose = true
-          end
-
-          opts.on_tail('--very-verbose', 'very verbose mode, shows pool stats beside usual verbose stuff') do
-            Jsus.verbose = true
-            options[:display_pool_stats] = true
-          end
-
-          opts.on_tail('-b', '--benchmark', 'shows time spent on various stages') do
-            options[:benchmark] = true
-          end
-
-          opts.on_tail('--without-scripts-info', 'do not generate scripts.json') do
-            options[:without_scripts_info] = true
-          end
-
-          opts.on_tail('--without-tree-info', 'do not generate tree.json') do
-            options[:without_tree_info] = true
-          end
-
-          opts.on_tail('--watch', 'watch file system events for *.js files in subdirectories and rerun jsus with the same parameters') do
-            options[:watch] = true
-          end
-
-          opts.on_tail('-h', '--help', 'Show this message') do
-            puts opts
-            exit
-          end
-        end
-        cli.parse!
-
-        options[:input_dir]  ||= ARGV[0]
-        options[:output_dir] ||= ARGV[1]
-
-        if !(options[:input_dir] && options[:output_dir])
-          puts cli
-          exit
-        end
-        options[:input_dir]  = File.expand_path(options[:input_dir])
-        options[:output_dir] = File.expand_path(options[:output_dir])
-        self.cli_options = options
-      end
-
-      def watch?
-        cli_options[:watch]
-      end
-
-      def launch!
-        new.launch
-      end
-
-      def run!
-        parse_command_line!
-        launch!
-        if watch?
-          watch do |base, match|
-            full_path = File.join(base, match)
-            unless full_path.include?(cli_options[:output_dir])
-              puts "#{match} has changed, relaunching jsus..."
-              begin
-                launch!
-                puts "... done"
-              rescue Exception => e
-                puts "Exception happened: #{e}, #{e.inspect}"
-                puts "\t#{e.backtrace.join("\n\t")}" if Jsus.verbose?
-                puts "Compilation FAILED."
-              end
-              puts ""
-            end
-          end
-        end
-      end
-
-      def watch
-        require 'fssm'
-        puts "Jsus enters watch mode, it will watch your files for changes and relaunch itself"
-        puts ""
-        start_directory = Dir.pwd
-        watched_dirs = [cli_options[:input_dir], cli_options[:deps_dir]].compact.map {|path| File.expand_path(path)}
-
-        watched_dirs.reject! do |dir|
-          # This is a work around for rb-fsevent quirk
-          # Apparently, when your dependency dir is a child directory for your input dir,
-          # You get problems.
-          result = false
-          pathname_traversal = Pathname.new(dir).descend do |parent|
-            parent = parent.to_s
-            result ||= watched_dirs.include?(parent) && parent != dir
-          end
-          result
-        end
-
-        puts "Watching directories: " + watched_dirs.inspect if Jsus.verbose?
-        FSSM.monitor do
-          watched_dirs.each do |dir|
-            path dir do
-              glob ["**/*.js", "**/package.yml", "**/package.json"]
-              update {|base, relative| yield base, relative }
-              delete {|base, relative| yield base, relative }
-              create {|base, relative| yield base, relative }
-            end
-          end
-        end
-
-      rescue LoadError => e
-        puts "You need to install fssm gem for --watch option."
-        puts "You may also want to install rb-fsevent for OS X"
-        raise e
-      end
-
-    end
-
-    attr_accessor :options
-
-    def initialize(options = Jsus::CLI.cli_options)
-      @options = options
-    end
-
-    def launch
-      checkpoint(:start)
-      setup_output_directory
-      preload_pool
-      load_package
-      display_pool_stats if options[:display_pool_stats]
-      compile_package
-      post_process if options[:postproc]
-      compress_package if options[:compress]
-      package_filename = File.join(@output_dir, @package.filename)
-      File.open(package_filename, 'w') {|f| f << @package_content  }
-      generate_supplemental_files
-      validate_sources
-      generate_includes if options[:generate_includes]
-      generate_docs if options[:documented_classes] && !options[:documented_classes].empty?
-      output_benchmarks
-    end
-
-    def setup_output_directory
-      @output_dir = options[:output_dir]
-      FileUtils.mkdir_p(@output_dir)
-    end
-
-    def preload_pool
-      @pool = if options[:deps_dir]
-        Jsus::Pool.new(options[:deps_dir])
-      else
-        Jsus::Pool.new
-      end
-      checkpoint(:pool)
-    end
-
-    def load_package
-      @package = Jsus::Package.new(options[:input_dir], :pool => @pool)
-      @package.include_dependencies!
-      checkpoint(:dependencies)
-    end
-
-    def display_pool_stats
-      checkpoint(:pool_stats)
-      puts ""
-      puts "Pool stats:"
-      puts ""
-      puts "Main package:"
-      display_package @package
-      puts "Supplementary packages:"
-      @pool.packages.each do |package|
-        display_package package
-      end
-      puts ""
-    end
-
-    def display_package(package)
-      puts "Package: #{package.name}"
-      package.source_files.to_a.sort_by {|sf| sf.filename}.each do |sf|
-        puts "    [#{sf.relative_filename}]"
-        puts "        Provides: [#{sf.provides_names.join(", ")}]"
-        puts "        Requires: [#{sf.requires_names.join(", ")}]"
-      end
-      puts ""
-    end
-
-    def compile_package
-      @package_content = @package.compile(nil)
-      checkpoint(:compilation)
-    end
-
-    def post_process
-      options[:postproc].each do |processor|
-        case processor.strip
-        when /^moocompat12$/i
-          @package_content.gsub!(/\/\/<1.2compat>.*?\/\/<\/1.2compat>/m, '')
-          @package_content.gsub!(/\/\*<1.2compat>\*\/.*?\/\*<\/1.2compat>\*\//m, '')
-        when /^mooltie8$/i
-          @package_content.gsub!(/\/\/<ltIE8>.*?\/\/<\/ltIE8>/m, '')
-          @package_content.gsub!(/\/\*<ltIE8>\*\/.*?\/\*<\/ltIE8>\*\//m, '')
-        else
-          $stderr.puts "Unknown post-processor: #{processor}"
-        end
-      end
-      checkpoint(:postproc)
-    end
-
-    def compress_package
-      compressed_content = Jsus::Util::Compressor.new(@package_content).result
-      if compressed_content != ""
-        @compression_ratio = compressed_content.size.to_f / @package_content.size.to_f
-        compressed_file_name = @package.filename.sub(/.js$/, ".min.js")
-        File.open(File.join(@output_dir, compressed_file_name), "w") {|f| f.write(compressed_content) }
-      else
-        @compression_ratio = 1.00
-        puts "ERROR: YUI compressor could not parse input. "
-        puts "Compressor command used: #{compressor.command.join(' ')}"
-      end
-      checkpoint(:compress)
-    end
-
-    def generate_supplemental_files
-      @package.generate_scripts_info(@output_dir) unless options[:without_scripts_info]
-      @package.generate_tree(@output_dir) unless options[:without_tree_info]
-      checkpoint(:supplemental_files)
-    end
-
-    def generate_includes
-      includes_root = options[:includes_root] || @output_dir
-      File.open(File.join(@output_dir, "includes.js"), "w") do |f|
-        c = Jsus::Container.new(*(@package.source_files.to_a + @package.linked_external_dependencies.to_a))
-        paths = c.required_files(includes_root)
-        f.puts Jsus::Util::CodeGenerator.generate_includes(paths)
-      end
-      checkpoint(:includes)
-    end
-
-    def generate_docs
-      documenter = Jsus::Util::Documenter.new(:highlight_source => !options[:no_syntax_highlight])
-      @package.source_files.each {|source| documenter << source }
-      @pool.sources.each {|source| documenter << source }
-      documenter.only(options[:documented_classes]).generate(@output_dir + "/docs")
-      checkpoint(:documentation)
-    end
-
-    def validate_sources
-      validators_map = {"mooforge" => Jsus::Util::Validator::Mooforge}
-      (options[:validators] || []).each do |validator_name|
-        if validator = validators_map[validator_name]
-          errors = validator.new(@pool.sources.to_a & @package.source_files.to_a).validation_errors
-          unless errors.empty?
-            puts "Validator #{validator_name} found errors: "
-            errors.each {|e| puts "  * #{e}"}
-          end
-        else
-          puts "No such validator: #{validator_name}"
-        end
-      end
-      checkpoint(:validators)
-    end
-
-    def output_benchmarks
-      if options[:benchmark]
-        puts "Benchmarking results:"
-        puts "Total execution time:   #{formatted_time_for(:all)}"
-        puts ""
-        puts "Of them:"
-        puts "Pool preloading time:   #{formatted_time_for(:pool)}"
-        puts "Docs generation time:   #{formatted_time_for(:documentation)}" if options[:documented_classes] && !options[:documented_classes].empty?
-        puts "Total compilation time: #{formatted_time_for(:compilation)}"
-        puts "Post-processing time:   #{formatted_time_for(:postproc)}" if options[:postproc]
-        puts "Compression time:       #{formatted_time_for(:compress)}" if options[:compress]
-        puts ""
-        puts "Compression ratio: #{sprintf("%.2f%%", @compression_ratio * 100)}" if Jsus.verbose? && @compression_ratio
-      end
-    end
-
-    def checkpoint(checkpoint_name)
-      @checkpoints ||= {}
-      @time_for    ||= {}
-      @checkpoints[checkpoint_name] = Time.now
-      if @last_checkpoint
-        @time_for[checkpoint_name] = @checkpoints[checkpoint_name] - @last_checkpoint
-      end
-      @last_checkpoint = Time.now
-    end
-
-    def checkpoint?(checkpoint_name)
-      @checkpoints[checkpoint_name]
-    end
-
-    def time_for(checkpoint_name)
-      if checkpoint_name == :all
-        @last_checkpoint - @checkpoints[:start]
-      else
-        @time_for[checkpoint_name]
-      end
-    end
-
-    def formatted_time_for(checkpoint_name)
-      "#{format("%.3f", time_for(checkpoint_name))}s"
+  opts.on('--generate-docs [*CLASSES]', Array, "generate docs for some of the sources. When given empty array, defaults to /**/*") do |docs|
+    if !docs
+      options[:documented_classes] = ["/**/*"]
+    else
+      options[:documented_classes] = docs
     end
   end
+
+  opts.on('--no-syntax-highlight', 'if you turned on docs generation, it will use syntax highlighting by default. This option prevents it') do
+    options[:no_syntax_highlight] = true
+  end
+
+  opts.on('--validate-with [*VALIDATORS]', Array, 'performs a check against some of the validators. Available validators: mooforge') do |validators|
+    options[:validators] = (validators || []).map {|v| v.downcase }
+  end
+
+  opts.on('--postproc [*PROCESSORS]', Array, 'performs postprocessing. Available postprocs:\n* moocompat12 -- removes mootools 1.2compat tags and their contents\n* mooltIE8 -- removes mootools ltIE8 compat tags and their contents') do |postprocs|
+    options[:postproc] = postprocs
+  end
+
+  opts.on('--compress', 'compresses resulting file with YUI compressor') do
+    options[:compress] = true
+  end
+
+  opts.on('--no-cycle-search', 'disables search for circular dependencies which may take quite some time during compilation') do
+    Jsus.look_for_cycles = false
+  end
+
+  opts.on_tail('-v', '--verbose', 'verbose mode, shows various debug messages') do
+    Jsus.verbose = true
+  end
+
+  opts.on_tail('--very-verbose', 'very verbose mode, shows pool stats beside usual verbose stuff') do
+    Jsus.verbose = true
+    options[:display_pool_stats] = true
+  end
+
+  opts.on_tail('-b', '--benchmark', 'shows time spent on various stages') do
+    options[:benchmark] = true
+  end
+
+  opts.on_tail('--without-scripts-info', 'do not generate scripts.json') do
+    options[:without_scripts_info] = true
+  end
+
+  opts.on_tail('--without-tree-info', 'do not generate tree.json') do
+    options[:without_tree_info] = true
+  end
+
+  opts.on_tail('--watch', 'watch file system events for *.js files in subdirectories and rerun jsus with the same parameters') do
+    options[:watch] = true
+  end
+
+  opts.on_tail('-h', '--help', 'Show this message') do
+    puts opts
+    exit
+  end
+end
+cli.parse!
+
+options[:input_dir]  ||= ARGV[0]
+options[:output_dir] ||= ARGV[1]
+
+if !(options[:input_dir] && options[:output_dir])
+  puts cli
+  exit
 end
 
-Jsus::CLI.run!
+options[:input_dir]  = File.expand_path(options[:input_dir])
+options[:output_dir] = File.expand_path(options[:output_dir])
+
+Jsus::Cli.run!(options)
