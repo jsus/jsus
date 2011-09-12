@@ -72,7 +72,7 @@ module Jsus
   #
   # @return [Jsus::Util::Logger]
   def self.logger
-    Thread.current[:jsus_logger] ||= Jsus::Util::Logger.new(STDOUT).tap do |logger|
+    Thread.current[:jsus_logger] ||= Jsus::Util::Logger.new($stdout).tap do |logger|
       logger.level = Logger::ERROR
       logger.formatter = lambda {|severity, time, progname, msg|
         "[#{time.strftime("%Y-%m-%d %H:%M:%S")}] [JSUS:#{severity}] #{msg}\n"
