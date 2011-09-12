@@ -18,11 +18,12 @@ module Jsus
       # @return [Boolean] true if that lib could be required, false otherwise
       # @api semipublic
       def try_load(gemname, lib = nil)
+        required_file = lib || gemname
         begin
-          require(lib || gemname)
+          require(required_file)
           true
         rescue LoadError
-          Jsus.logger.fatal %{ERROR: You need "#{gemname}" gem in order to use compression option}
+          Jsus.logger.error %{ERROR: missing file #{required_file}}
           false
         end
       end
