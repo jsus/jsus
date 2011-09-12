@@ -8,7 +8,11 @@ gem "rgl"
 group :development do
   gem "rake"
   gem "rspec"
-  gem "cucumber"
+
+  # FIXME: change to the latest cucumber version when cucumber bug gets fixed
+  # https://github.com/cucumber/cucumber/issues/136
+  gem "cucumber", "1.0.3", :platform => :jruby
+
   gem "jeweler"
   gem "murdoc", "~> 0.1.11"
   gem "ruby-debug19", :platforms => :ruby_19
