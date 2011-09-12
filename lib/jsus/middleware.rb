@@ -36,14 +36,15 @@ module Jsus
     class << self
       # Default settings for Middleware
       DEFAULT_SETTINGS = {
-        :packages_dir     => ".",
-        :cache            => false,
-        :cache_path       => nil,
-        :prefix           => "jsus",
-        :cache_pool       => true,
-        :includes_root    => ".",
-        :log_method       => nil, # [:alert, :html, :console]
-        :postproc         => []   # ["mooltie8", "moocompat12"]
+        :packages_dir       => ".",
+        :cache              => false,
+        :cache_path         => nil,
+        :prefix             => "jsus",
+        :cache_pool         => true,
+        :includes_root      => ".",
+        :compression_method => :yui, # :yui, :frontcompiler, :uglifier, :closure
+        :log_method         => nil,  # [:alert, :html, :console]
+        :postproc           => []    # ["mooltie8", "moocompat12"]
       }.freeze
 
       # @return [Hash] Middleware current settings
@@ -175,7 +176,7 @@ module Jsus
       files = path_string_to_files(path_string)
       if !files.empty?
         response = Container.new(*files).map {|f| f.content }.join("\n")
-        response = Jsus::Util::Compressor.new(response).result if request_options[:compress]
+        response = Jsus::Util::Compressor.compress(response, :method => self.class.settings[:compression_method]) if request_options[:compress]
         respond_with(response)
       else
         not_found!
