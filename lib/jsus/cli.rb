@@ -6,7 +6,7 @@ module Jsus
       def run!(options)
         self.cli_options = options
         new.launch
-        
+
         if options[:watch]
           input_dirs = [ options[:input_dir], options[:deps_dir] ]
           Jsus::Util::Watcher(input_dirs, options[:output_dir]) do
@@ -27,7 +27,7 @@ module Jsus
       output_dir.mkpath
       output_dir
     end
-    
+
     def launch
       checkpoint(:start)
       @output_dir = setup_output_directory
@@ -36,17 +36,17 @@ module Jsus
       display_pool_stats(@pool) if options[:display_pool_stats]
       @package_content = compile_package(@package)
       post_process!(@package_content, options[:postproc]) if options[:postproc]
-      
+
       package_filename = @output_dir + @package.filename
-      
+
       if options[:compress]
         File.open(package_filename.to_s.chomp(".js") + ".min.js", 'w') do |f|
-          f.write compress_package(@package_content) 
+          f.write compress_package(@package_content)
         end
       end
-      
+
       package_filename.open('w') {|f| f << @package_content  }
-      
+
       generate_supplemental_files
       validate_sources
       generate_includes if options[:generate_includes]
@@ -104,7 +104,7 @@ module Jsus
     end
 
     def compress_package(content)
-      compressed_content = Jsus::Util::Compressor.new(content).result
+      compressed_content = Jsus::Util::Compressor.compress(content)
       if compressed_content != ""
         @compression_ratio = compressed_content.size.to_f / content.size.to_f
       else
@@ -113,7 +113,7 @@ module Jsus
         Jsus.logger.error "Compressor command used: #{compressor.command.join(' ')}"
       end
       checkpoint(:compress)
-      
+
       compressed_content
     end
 

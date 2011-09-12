@@ -18,7 +18,12 @@ group :development do
   gem "ruby-debug19", :platforms => :ruby_19
   gem "ruby-debug",   :platforms => :ruby_18
   gem 'fssm'
-  gem 'yui-compressor'
+
+  gem 'yui-compressor',   :require => false
+  gem 'uglifier',         :require => false
+  gem 'front-compiler',   :require => false
+  gem 'closure-compiler', :require => false
+
   gem 'sinatra'
   gem 'rack-test'
   gem 'yard'

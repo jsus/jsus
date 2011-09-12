@@ -9,6 +9,7 @@ module Jsus
         # @param [Hash] options
         # @option [Symbol] (:yui) method compressor to use.
         #   Available methods: :uglifier, :frontcompiler, :closure, :yui
+        # @return [String] compressed js code
         # @api public
         def compress(source, options = {})
           method = options.fetch(:method, :yui)
@@ -17,6 +18,9 @@ module Jsus
             when :frontcompiler then compress_with_frontcompiler(source)
             when :closure then compress_with_closure(source)
             when :yui then compress_with_yui(source)
+            else
+              Jsus.logger.error "tried to use unavailable method #{method.inspect}"
+              source
           end
         end # compress
 
@@ -34,12 +38,13 @@ module Jsus
         # @api private
         def compress_with_uglifier(source)
           if Jsus::Util.try_load("uglifier")
-            Uglifier.new.compile(source)
+            Uglifier.compile(source, :squeeze => true, :copyright => false)
           else
             source
           end
         end # compress_with_uglifier
 
+        # @api private
         def compress_with_frontcompiler(source)
           if Jsus::Util.try_load('front-compiler')
             FrontCompiler.new.compact_js(source)
@@ -48,6 +53,7 @@ module Jsus
           end
         end # compress_with_frontcompiler
 
+        # @api private
         def compress_with_closure(source)
           if Jsus::Util.try_load('closure-compiler')
             Closure::Compiler.new.compile(source)
