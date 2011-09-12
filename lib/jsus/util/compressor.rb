@@ -1,50 +1,61 @@
 module Jsus
   module Util
-    class Compressor
-      attr_reader :result
-      def initialize(source, options = {}) # todo - non-java compressor
-        @result = case options[:method]
-          when :uglifier then compress_with_uglifier(source)
-          when :frontcompiler then compress_with_frontcompiler(source)
-          when :closure then compress_with_closure(source)
-          else compress_with_yui(source)
-        end
-      end # initialize
+    module Compressor
+      class <<self
+        # Compresses the javascript source with given compressor and returns
+        # the result.
+        #
+        # @param [String] source javascript source code
+        # @param [Hash] options
+        # @option [Symbol] (:yui) method compressor to use.
+        #   Available methods: :uglifier, :frontcompiler, :closure, :yui
+        # @api public
+        def compress(source, options = {})
+          method = options.fetch(:method, :yui)
+          @result = case method
+            when :uglifier then compress_with_uglifier(source)
+            when :frontcompiler then compress_with_frontcompiler(source)
+            when :closure then compress_with_closure(source)
+            when :yui then compress_with_yui(source)
+          end
+        end # compress
 
-      def compress_with_yui(source)
-        try_load("yui-compressor", 'yui/compressor') do
-          YUI::JavaScriptCompressor.new(:munge => true).compress(source)
-        end
-      end # compress_with_yui
+        private
 
-      def compress_with_uglifier(source)
-        try_load("uglifier") do
-          Uglifier.new.compile(source)
-        end
-      end
+        # @api private
+        def compress_with_yui(source)
+          if Jsus::Util.try_load("yui-compressor", 'yui/compressor')
+            YUI::JavaScriptCompressor.new(:munge => true).compress(source)
+          else
+            source
+          end
+        end # compress_with_yui
 
-      def compress_with_frontcompiler(source)
-        try_load('front-compiler') do
-          FrontCompiler.new.compact_js(source)
-        end
-      end
+        # @api private
+        def compress_with_uglifier(source)
+          if Jsus::Util.try_load("uglifier")
+            Uglifier.new.compile(source)
+          else
+            source
+          end
+        end # compress_with_uglifier
 
-      def compress_with_closure(source)
-        try_load('closure-compiler') do
-          Closure::Compiler.new.compile(source)
-        end
-      end
+        def compress_with_frontcompiler(source)
+          if Jsus::Util.try_load('front-compiler')
+            FrontCompiler.new.compact_js(source)
+          else
+            source
+          end
+        end # compress_with_frontcompiler
 
-      private
-      def try_load(gemname, lib = nil)
-        begin
-          require(lib || gemname)
-          content = yield
-        rescue LoadError
-          Jsus.logger.fatal %{ERROR: You need "#{gemname}" gem in order to use compression option}
-        end
-        content
-      end
-    end # class Compressor
+        def compress_with_closure(source)
+          if Jsus::Util.try_load('closure-compiler')
+            Closure::Compiler.new.compile(source)
+          else
+            source
+          end
+        end # compress_with_closure
+      end # class <<self
+    end # module Compressor
   end # module Util
 end # module Jsus
