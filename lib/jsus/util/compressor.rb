@@ -28,8 +28,8 @@ module Jsus
 
         # @api private
         def compress_with_yui(source)
-          if Jsus::Util.try_load("yui-compressor", 'yui/compressor')
-            YUI::JavaScriptCompressor.new(:munge => true).compress(source)
+          if Jsus::Util.try_load("yuicompressor")
+            YUICompressor.compress_js(source, :munge => true)
           else
             source
           end

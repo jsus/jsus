@@ -19,7 +19,7 @@ group :development do
   gem "ruby-debug",   :platforms => :ruby_18
   gem 'fssm'
 
-  gem 'yui-compressor',   :require => false
+  gem 'yuicompressor',    :require => false
   gem 'uglifier',         :require => false
   gem 'front-compiler',   :require => false
   gem 'closure-compiler', :require => false
