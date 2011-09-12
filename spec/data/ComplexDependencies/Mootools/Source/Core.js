@@ -15,6 +15,8 @@ provides: [Core]
 ...
 */
 
+var Core = {};
+
 //<ltIE8>
 var IE7 = true;
 //</ltIE8>

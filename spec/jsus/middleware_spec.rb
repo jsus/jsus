@@ -281,7 +281,7 @@ describe Jsus::Middleware do
   describe "post processing" do
     let(:packages_dir) { File.expand_path("spec/data/ComplexDependencies") }
     before(:each) { Jsus::Middleware.settings = {:packages_dir => packages_dir} }
-    let("path") { "/javascripts/jsus/require/Package.js" }
+    let(:path) { "/javascripts/jsus/require/Package.js" }
     it "should not do anything if postprocs setting is empty" do
       Jsus::Middleware.settings = {:postproc => []}
       get(path).body.should include("//<ltIE8>")
@@ -304,6 +304,28 @@ describe Jsus::Middleware do
       get(path).body.should_not include("//<1.2compat>")
     end
   end # describe "post processing"
+
+  describe "compression" do
+    let(:packages_dir) { File.expand_path("spec/data/ComplexDependencies") }
+    before(:each) { described_class.settings = {:packages_dir => packages_dir} }
+    let(:path) { "/javascripts/jsus/compressed/Package.js" }
+
+    it "should be successful" do
+      get(path).should be_successful
+    end
+
+    it "should respond with type text/javascript" do
+      get(path).content_type.should == "text/javascript"
+    end
+
+    it "should respond with generated content" do
+      get(path).body.should =~ /var.*Core/
+    end
+
+    it "should compress the code" do
+      get(path).body.should_not include("/*")
+    end
+  end # describe "compression"
 
   describe "errors logging" do
     let(:packages_dir) { File.expand_path("spec/data/MissingDependencies") }
