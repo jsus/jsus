@@ -11,7 +11,7 @@ group :development do
 
   # FIXME: change to the latest cucumber version when cucumber bug gets fixed
   # https://github.com/cucumber/cucumber/issues/136
-  gem "cucumber", "1.0.3", :platform => :jruby
+  gem "cucumber", "1.0.3"
 
   gem "jeweler"
   gem "murdoc", "~> 0.1.11"
