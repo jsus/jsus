@@ -48,37 +48,32 @@ class Jsus::Util::Watcher
   # @param [String] match matched part of filename
   # @api semipublic
   def watch_callback(base, match)
-    return if running?
-    full_path = File.join(base, match)
     Thread.new do
-      begin
-        running!
+      run do
+        full_path = File.join(base, match)
         @callback.call(full_path)
+      end
+    end
+  end # watch_callback
+
+  # @api semipublic
+  def run
+    if @semaphore.try_lock
+      begin
+        yield
       rescue Exception => e
         Jsus.logger.error "Exception happened during watching: #{e}, #{e.inspect}"
         Jsus.logger.error "\t#{e.backtrace.join("\n\t")}" if Jsus.verbose?
         Jsus.logger.error "Compilation FAILED."
       ensure
-        finished!
+        @semaphore.unlock
       end
     end
-  end # watch_callback
+  end # run
 
   # @return [Boolean]
   # @api public
   def running?
     @semaphore.locked?
   end # running?
-
-  # Sets watcher state to running
-  # @api semipublic
-  def running!
-    @semaphore.lock
-  end # running!
-
-  # Sets watcher state to finished
-  # @api semipublic
-  def finished!
-    @semaphore.unlock
-  end # finished!
 end

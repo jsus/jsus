@@ -101,7 +101,7 @@ describe Jsus::Util::Watcher do
       @callback_called_times = 0
       watch([inner_directory, directory], 2) do
         @callback_called_times += 1
-        sleep(10) # Simulate some work
+        sleep(1) # Simulate some work
       end
       File.open(watched_file, "w+") {|f| f.puts "var Hello = 1;"}
       stop_watching
