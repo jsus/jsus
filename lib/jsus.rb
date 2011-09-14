@@ -22,7 +22,7 @@ module Jsus
   autoload :Pool,       'jsus/pool'
   autoload :Util,       'jsus/util'
   autoload :Middleware, 'jsus/middleware'
-  autoload :Cli,        'jsus/cli'
+  autoload :CLI,        'jsus/cli'
   autoload :Compiler,   'jsus/compiler'
 
   # In verbose mode jsus shows a lot of warnings like missing dependencies.
