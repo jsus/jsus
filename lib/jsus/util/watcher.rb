@@ -21,7 +21,7 @@ class Jsus::Util::Watcher
     require 'fssm'
     @callback = callback
     input_dirs = Array(input_dirs).compact
-
+    @semaphore = Mutex.new
     watcher = self
     FSSM.monitor do
       input_dirs.each do |dir|
@@ -67,18 +67,18 @@ class Jsus::Util::Watcher
   # @return [Boolean]
   # @api public
   def running?
-    !!@running
+    @semaphore.locked?
   end # running?
 
   # Sets watcher state to running
   # @api semipublic
   def running!
-    @running = true
+    @semaphore.lock
   end # running!
 
   # Sets watcher state to finished
   # @api semipublic
   def finished!
-    @running = false
+    @semaphore.unlock
   end # finished!
 end
