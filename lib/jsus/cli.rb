@@ -1,5 +1,6 @@
+# TODO: document Cli class
 module Jsus
-  class Cli
+  class CLI
     class << self
       attr_accessor :cli_options
 
@@ -8,9 +9,12 @@ module Jsus
         new.launch
 
         if options[:watch]
-          input_dirs = [ options[:input_dir], options[:deps_dir] ]
-          Jsus::Util::Watcher(input_dirs, options[:output_dir]) do
+          input_dirs = [ options[:input_dir], options[:deps_dir] ].compact
+          Jsus.logger.info "Jsus enters watch mode, it will watch your files for changes and relaunch itself"
+          Jsus::Util::Watcher.watch(input_dirs) do |filename|
+            Jsus.logger.info "#{filename} changed, recompiling..."
             new.launch
+            Jsus.logger.info "... done"
           end
         end
       end
@@ -18,7 +22,7 @@ module Jsus
 
     attr_accessor :options
 
-    def initialize(options = Jsus::Cli.cli_options)
+    def initialize(options = Jsus::CLI.cli_options)
       @options = options
     end
 
@@ -71,26 +75,26 @@ module Jsus
 
     def display_pool_stats(pool)
       checkpoint(:pool_stats)
-      puts ""
-      puts "Pool stats:"
-      puts ""
-      puts "Main package:"
-      display_package @package
-      puts "Supplementary packages:"
-      pool.packages.each do |package|
-        display_package package
-      end
-      puts ""
+      message = <<-EOF
+Pool stats:
+Main package:
+#{display_package @package}
+
+Supplementary packages:
+#{pool.packages.map {|package| display_package package}.join }
+
+EOF
+      Jsus.logger.info message
     end
 
     def display_package(package)
-      puts "Package: #{package.name}"
+      result = "Package: #{package.name}\n"
       package.source_files.to_a.sort_by {|sf| sf.filename}.each do |sf|
-        puts "    [#{sf.relative_filename}]"
-        puts "        Provides: [#{sf.provides_names.join(", ")}]"
-        puts "        Requires: [#{sf.requires_names.join(", ")}]"
+        result << "    [#{sf.relative_filename}]\n"
+        result << "        Provides: [#{sf.provides_names.join(", ")}]\n"
+        result << "        Requires: [#{sf.requires_names.join(", ")}]\n"
       end
-      puts ""
+      result << "\n"
     end
 
     def compile_package(package)
@@ -110,8 +114,8 @@ module Jsus
         @compression_ratio = compressed_content.size.to_f / content.size.to_f
       else
         @compression_ratio = 1.00
-        Jsus.logger.error "ERROR: YUI compressor could not parse input. "
-        Jsus.logger.error "Compressor command used: #{compressor.command.join(' ')}"
+        Jsus.logger.error "YUI compressor could not parse input. \n" <<
+                          "Compressor command used: #{compressor.command.join(' ')}"
       end
       checkpoint(:compress)
 
@@ -144,11 +148,11 @@ module Jsus
         if validator = validators_map[validator_name]
           errors = validator.new(@pool.sources.to_a & @package.source_files.to_a).validation_errors
           unless errors.empty?
-            puts "Validator #{validator_name} found errors: "
-            errors.each {|e| puts "  * #{e}"}
+            Jsus.logger.info "Validator #{validator_name} found errors: " <<
+                             errors.map {|e| Jsus.logger.info "  * #{e}"}.join("\n")
           end
         else
-          puts "No such validator: #{validator_name}"
+          Jsus.logger.info "No such validator: #{validator_name}"
         end
       end
       checkpoint(:validators)
@@ -156,17 +160,18 @@ module Jsus
 
     def output_benchmarks
       if options[:benchmark]
-        puts "Benchmarking results:"
-        puts "Total execution time:   #{formatted_time_for(:all)}"
-        puts ""
-        puts "Of them:"
-        puts "Pool preloading time:   #{formatted_time_for(:pool)}"
-        puts "Docs generation time:   #{formatted_time_for(:documentation)}" if options[:documented_classes] && !options[:documented_classes].empty?
-        puts "Total compilation time: #{formatted_time_for(:compilation)}"
-        puts "Post-processing time:   #{formatted_time_for(:postproc)}" if options[:postproc]
-        puts "Compression time:       #{formatted_time_for(:compress)}" if options[:compress]
-        puts ""
-        puts "Compression ratio: #{sprintf("%.2f%%", @compression_ratio * 100)}" if Jsus.verbose? && @compression_ratio
+        message = "Benchmarking results:\n"
+        message << "Total execution time:   #{formatted_time_for(:all)}\n"
+        message << "\n"
+        message << "Of them:\n"
+        message << "Pool preloading time:   #{formatted_time_for(:pool)}\n"
+        message << "Docs generation time:   #{formatted_time_for(:documentation)}\n" if options[:documented_classes] && !options[:documented_classes].empty?
+        message << "Total compilation time: #{formatted_time_for(:compilation)}\n"
+        message << "Post-processing time:   #{formatted_time_for(:postproc)}\n" if options[:postproc]
+        message << "Compression time:       #{formatted_time_for(:compress)}\n" if options[:compress]
+        message << "\n"
+        message << "Compression ratio: #{sprintf("%.2f%%", @compression_ratio * 100)}\n" if Jsus.verbose? && @compression_ratio
+        Jsus.logger.info message
       end
     end
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-
 require 'pathname'
 
 begin
@@ -20,12 +19,11 @@ end
 
 require 'jsus'
 require "optparse"
-require "logger"
 
 Jsus.logger = Jsus::Util::Logger.new(STDOUT)
 Jsus.logger.formatter = lambda {|severity, time, progname, msg|
   prefix = case severity
-  when /error/i, /fatal/i then "[#{severity}]: "
+  when /error/i, /fatal/i, /warn/i then "[#{severity}]: "
   else ""
   end
   "#{prefix}#{msg}\n"
@@ -36,12 +34,12 @@ cli = OptionParser.new do |opts|
   opts.banner = "jsus #{Jsus.version}. Usage: jsus [options] <input_dir> <output_dir>"
 
   opts.on('-i', '--input-directory [DIR]', '[DEPRECATED] path to input directory ') do |dir|
-    $stderr.puts "DEPRECATION NOTICE: please do not use -i command-line argument"
+    Jsus.logger.warn "DEPRECATION NOTICE: please do not use -i command-line argument"
     options[:input_dir] = dir
   end
 
   opts.on('-o', '--output-directory [DIR]', '[DEPRECATED] path to output directory ') do |dir|
-    $stderr.puts "DEPRECATION NOTICE: please do not use -o command-line argument"
+    Jsus.logger.warn "DEPRECATION NOTICE: please do not use -o command-line argument"
     options[:output_dir] = dir
   end
 
@@ -121,7 +119,7 @@ cli.parse!
 options[:input_dir]  ||= ARGV[0]
 options[:output_dir] ||= ARGV[1]
 
-if !(options[:input_dir] && options[:output_dir])
+unless options[:input_dir] && options[:output_dir]
   puts cli
   exit
 end
@@ -129,4 +127,4 @@ end
 options[:input_dir]  = File.expand_path(options[:input_dir])
 options[:output_dir] = File.expand_path(options[:output_dir])
 
-Jsus::Cli.run!(options)
+Jsus::CLI.run!(options)
