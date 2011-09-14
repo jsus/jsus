@@ -22,7 +22,14 @@ require 'jsus'
 require "optparse"
 require "logger"
 
-Jsus.logger = Logger.new(STDOUT)
+Jsus.logger = Jsus::Util::Logger.new(STDOUT)
+Jsus.logger.formatter = lambda {|severity, time, progname, msg|
+  prefix = case severity
+  when /error/i, /fatal/i then "[#{severity}]: "
+  else ""
+  end
+  "#{prefix}#{msg}\n"
+}
 
 options = {}
 cli = OptionParser.new do |opts|
