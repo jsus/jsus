@@ -28,39 +28,44 @@ module Jsus
 
         # @api private
         def compress_with_yui(source)
-          if Jsus::Util.try_load("yuicompressor")
+          try_compress(source, "yuicompressor") do
             YUICompressor.compress_js(source, :munge => true)
-          else
-            source
           end
         end # compress_with_yui
 
         # @api private
         def compress_with_uglifier(source)
-          if Jsus::Util.try_load("uglifier")
+          try_compress(source, "uglifier") do
             Uglifier.compile(source, :squeeze => true, :copyright => false)
-          else
-            source
           end
         end # compress_with_uglifier
 
         # @api private
         def compress_with_frontcompiler(source)
-          if Jsus::Util.try_load('front-compiler')
+          try_compress(source, 'front-compiler') do
             FrontCompiler.new.compact_js(source)
-          else
-            source
           end
         end # compress_with_frontcompiler
 
         # @api private
         def compress_with_closure(source)
-          if Jsus::Util.try_load('closure-compiler')
+          try_compress(source, 'closure-compiler') do
             Closure::Compiler.new.compile(source)
+          end
+        end # compress_with_closure
+
+        # @api private
+        def try_compress(source, library, libname = nil)
+          if Jsus::Util.try_load(library, libname) then
+            yield
           else
             source
           end
-        end # compress_with_closure
+        rescue Exception => e
+          Jsus.logger.error "#{library} could not compress the file, exception raised #{e}\n" <<
+                            "Returning initial source"
+          source
+        end # try_compress
       end # class <<self
     end # module Compressor
   end # module Util
