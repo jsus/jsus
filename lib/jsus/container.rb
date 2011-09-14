@@ -128,25 +128,31 @@ module Jsus
           end
         end
       end
-      result = []
-      if Jsus.look_for_cycles?
-        cycles = graph.cycles
-        error_msg = []
-        unless cycles.empty?
-          error_msg << "Jsus has discovered you have circular dependencies in your code."
-          error_msg << "Please resolve them immediately!"
-          error_msg << "List of circular dependencies:"
-          cycles.each do |cycle|
-            error_msg << "-" * 30
-            error_msg << (cycle + [cycle.first]).map {|sf| sf.filename}.join(" => ")
-          end
-          error_msg = error_msg.join("\n")
-          Jsus.logger.fatal(error_msg)
-        end
+
+      begin
+        graph.topsorted_vertices
+      rescue RGL::TopsortedGraphHasCycles
+        output_cycles
+        []
       end
-      graph.topsort_iterator.each { |item| result << item }
-      result
     end
+
+    # @api private
+    def output_cycles
+      cycles = graph.cycles
+      error_msg = []
+      unless cycles.empty?
+        error_msg << "Jsus has discovered you have circular dependencies in your code."
+        error_msg << "Please resolve them immediately!"
+        error_msg << "List of circular dependencies:"
+        cycles.each do |cycle|
+          error_msg << "-" * 30
+          error_msg << (cycle + [cycle.first]).map {|sf| sf.filename}.join(" => ")
+        end
+        error_msg = error_msg.join("\n")
+        Jsus.logger.fatal(error_msg)
+      end
+    end # output_cycles
 
     # Cached map of dependencies pointing to source files.
     # @return [Hash]

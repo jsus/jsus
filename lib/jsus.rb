@@ -6,9 +6,9 @@ require 'active_support/ordered_hash'
 require 'active_support/core_ext/module/delegation'
 require 'rgl/adjacency'
 require 'rgl/topsort'
+require 'extensions/rgl'
 
 require 'fileutils'
-require 'pathname'
 
 #
 # Jsus -- your better javascript packager.
