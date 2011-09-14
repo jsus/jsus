@@ -16,6 +16,10 @@ group :development do
   gem "jeweler"
   gem "murdoc", "~> 0.1.11"
   gem "ruby-debug19", :platforms => :ruby_19
+
+  # FIXME: linecache being ruby1.9+only
+  gem "linecache", "= 0.45"
+
   gem "ruby-debug",   :platforms => :ruby_18
   gem 'fssm'
 
