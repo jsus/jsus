@@ -2,7 +2,8 @@
 == Version 0.3.5
 Other changes:
 * Fixed error reporting routine when package.json / .yml was missing.
-
+* New compression methods: frontcompiler, closure, uglifier
+  (besides the default yui) [Thanks to Pavel Evstigneev]
 
 == Version 0.3.4
 Middleware changes:
