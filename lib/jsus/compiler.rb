@@ -1,7 +1,7 @@
 module Jsus::Compiler
   # Handles main features of jsus
   extend self
-  
+
   def post_process!(content, postproc)
     postproc.each do |processor|
       case processor.strip
@@ -16,13 +16,13 @@ module Jsus::Compiler
       end
     end
   end
-  
+
   def generate_includes(package, includes_root, output_file)
-    output_fileopen("w") do |f|
+    output_file.open("w") do |f|
       c = Jsus::Container.new(*(@package.source_files.to_a + @package.linked_external_dependencies.to_a))
       paths = c.required_files(includes_root)
       f.puts Jsus::Util::CodeGenerator.generate_includes(paths)
     end
   end
-  
+
 end
