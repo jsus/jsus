@@ -9,6 +9,7 @@ module Jsus
     autoload :FileCache,     'jsus/util/file_cache'
     autoload :CodeGenerator, 'jsus/util/code_generator'
     autoload :Logger,        'jsus/util/logger'
+    autoload :Watcher,       'jsus/util/watcher'
 
     class <<self
       # Tries to load given gem.
