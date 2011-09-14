@@ -132,13 +132,13 @@ module Jsus
       begin
         graph.topsorted_vertices
       rescue RGL::TopsortedGraphHasCycles
-        output_cycles
+        output_cycles(graph)
         []
       end
     end
 
     # @api private
-    def output_cycles
+    def output_cycles(graph)
       cycles = graph.cycles
       error_msg = []
       unless cycles.empty?
