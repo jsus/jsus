@@ -1,63 +1,84 @@
 class Jsus::Util::Watcher
   class << self
-    def watch(input_dirs, output_dir, options)
-      new(*args)
+    # Watches input directories and their subdirectories for changes in
+    # js source files and package metadata files.
+    # @param [String, Array] input_dirs directory or directories to watch
+    # @yield [filename] Callback to trigger on creation / update / removal of
+    #        any file in given directories
+    # @yieldparam [String] filename Updated filename full path
+    # @return [FSSM::Monitor] fssm monitor instance
+    # @api public
+    def watch(input_dirs, &callback)
+      new(input_dirs, &callback)
     end
   end
-  
-  def initialize(input_dirs, output_dir, options = {}, &on_change)
-    
+
+  # Instantiates a FSSM monitor and starts watching. Consider using class method
+  # Jsus::Util::Watcher.watch instead.
+  # @see .watch
+  # @api semipublic
+  def initialize(input_dirs, &callback)
     require 'fssm'
-    Jsus.logger.info "Jsus enters watch mode, it will watch your files for changes and relaunch itself"
-    
-    @output_dir = output_dir
-    @input_dirs = input_dirs.compact.map {|path| File.expand_path(path)}
-    @on_change = on_change
+    @callback = callback
+    input_dirs = Array(input_dirs).compact
 
-    @output_dir.reject! do |dir|
-      # This is a work around for rb-fsevent quirk
-      # Apparently, when your dependency dir is a child directory for your input dir,
-      # You get problems.
-      result = false
-      pathname_traversal = Pathname.new(dir).descend do |parent|
-        parent = parent.to_s
-        result ||= @output_dir.include?(parent) && parent != dir
-      end
-      result
-    end
-
-    Jsus.logger.info("Watching directories: " + @output_dir.inspect)
-    
+    watcher = self
     FSSM.monitor do
-      @output_dir.each do |dir|
+      input_dirs.each do |dir|
+        dir = File.expand_path(dir)
         path(dir) do
           glob ["**/*.js", "**/package.yml", "**/package.json"]
-          update &method(:watch_callback) # {|base, relative| yield(base, relative) }
-          delete &method(:watch_callback) # {|base, relative| yield(base, relative) }
-          create &method(:watch_callback) # {|base, relative| yield(base, relative) }
+          create &watcher.method(:watch_callback)
+          update &watcher.method(:watch_callback)
+          delete &watcher.method(:watch_callback)
         end
       end
     end
 
   rescue LoadError => e
     Jsus.logger.error "You need to install fssm gem for --watch option."
-    Jsus.logger.error "You may also want to install rb-fsevent for OS X"
+    Jsus.logger.error "You may also want to install rb-fsevent for OS X" if RUBY_PLATFORM =~ /darwin/
     raise e
   end
-  
+
+  # Default callback for the FSSM watcher.
+  # @note Defers the processing to a separate thread and ignores all the incoming
+  #       events received during the processing.
+  # @param [String] base base part of filename
+  # @param [String] match matched part of filename
+  # @api semipublic
   def watch_callback(base, match)
-      full_path = File.join(base, match)
-      unless full_path.include?(@output_dir)
-        Jsus.logger.info "#{match} has changed, relaunching jsus..."
-        begin
-          @on_change.call
-          Jsus.logger.info "... done"
-        rescue Exception => e
-          Jsus.logger.error "Exception happened: #{e}, #{e.inspect}"
-          Jsus.logger.error "\t#{e.backtrace.join("\n\t")}" if Jsus.verbose?
-          Jsus.logger.error "Compilation FAILED."
-        end
+    return if running?
+    full_path = File.join(base, match)
+    Thread.new do
+      begin
+        running!
+        @callback.call(full_path)
+      rescue Exception => e
+        Jsus.logger.error "Exception happened during watching: #{e}, #{e.inspect}"
+        Jsus.logger.error "\t#{e.backtrace.join("\n\t")}" if Jsus.verbose?
+        Jsus.logger.error "Compilation FAILED."
+      ensure
+        finished!
       end
     end
-  end
+  end # watch_callback
+
+  # @return [Boolean]
+  # @api public
+  def running?
+    !!@running
+  end # running?
+
+  # Sets watcher state to running
+  # @api semipublic
+  def running!
+    @running = true
+  end # running!
+
+  # Sets watcher state to finished
+  # @api semipublic
+  def finished!
+    @running = false
+  end # finished!
 end
