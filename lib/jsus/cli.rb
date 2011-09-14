@@ -129,7 +129,7 @@ EOF
     end
 
     def generate_includes
-      includes_root = Pathname.new(options[:includes_root]) || @output_dir
+      includes_root = Pathname.new(options[:includes_root] || @output_dir)
       Compiler.generate_includes(@package, includes_root, @output_dir + "includes.js")
       checkpoint(:includes)
     end
