@@ -149,6 +149,7 @@ module Jsus
           error_msg << "-" * 30
           error_msg << (cycle + [cycle.first]).map {|sf| sf.filename}.join(" => ")
         end
+        error_msg << "-" * 30
         error_msg = error_msg.join("\n")
         Jsus.logger.fatal(error_msg)
       end
