@@ -1,6 +1,7 @@
 = Jsus Changelog
 == Version 0.3.5
 Other changes:
+* Faster cycle search; fails fast and makes --no-cycle-search option obsolete
 * Fixed error reporting routine when package.json / .yml was missing.
 * New compression methods: frontcompiler, closure, uglifier
   (besides the default yui) [Thanks to Pavel Evstigneev]

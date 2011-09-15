@@ -131,9 +131,9 @@ module Jsus
 
       begin
         graph.topsorted_vertices
-      rescue RGL::TopsortedGraphHasCycles
+      rescue RGL::TopsortedGraphHasCycles => e
         output_cycles(graph)
-        []
+        raise e # fail fast
       end
     end
 

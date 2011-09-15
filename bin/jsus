@@ -80,10 +80,6 @@ cli = OptionParser.new do |opts|
     options[:compression_method] = method
   end
 
-  opts.on('--no-cycle-search', 'disables search for circular dependencies which may take quite some time during compilation') do
-    Jsus.look_for_cycles = false
-  end
-
   opts.on_tail('-v', '--verbose', 'verbose mode, shows various debug messages') do
     Jsus.verbose = true
   end

@@ -56,6 +56,8 @@ module Jsus
       generate_includes if options[:generate_includes]
       generate_docs if options[:documented_classes] && !options[:documented_classes].empty?
       output_benchmarks
+    rescue Exception => e
+      output_benchmarks
     end
 
     def preload_pool
@@ -164,11 +166,11 @@ EOF
         message << "Total execution time:   #{formatted_time_for(:all)}\n"
         message << "\n"
         message << "Of them:\n"
-        message << "Pool preloading time:   #{formatted_time_for(:pool)}\n"
-        message << "Docs generation time:   #{formatted_time_for(:documentation)}\n" if options[:documented_classes] && !options[:documented_classes].empty?
-        message << "Total compilation time: #{formatted_time_for(:compilation)}\n"
-        message << "Post-processing time:   #{formatted_time_for(:postproc)}\n" if options[:postproc]
-        message << "Compression time:       #{formatted_time_for(:compress)}\n" if options[:compress]
+        message << "Pool preloading time:   #{formatted_time_for(:pool)}\n" if checkpoint?(:pool)
+        message << "Docs generation time:   #{formatted_time_for(:documentation)}\n" if checkpoint?(:documentation)
+        message << "Total compilation time: #{formatted_time_for(:compilation)}\n" if checkpoint?(:compilation)
+        message << "Post-processing time:   #{formatted_time_for(:postproc)}\n" if checkpoint?(:postproc)
+        message << "Compression time:       #{formatted_time_for(:compress)}\n" if checkpoint?(:compress)
         message << "\n"
         message << "Compression ratio: #{sprintf("%.2f%%", @compression_ratio * 100)}\n" if Jsus.verbose? && @compression_ratio
         Jsus.logger.info message
