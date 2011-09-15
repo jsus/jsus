@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{jsus}
-  s.version = "0.3.4"
+  s.version = "0.3.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Abramov"]
-  s.date = %q{2011-08-30}
+  s.date = %q{2011-09-15}
   s.default_executable = %q{jsus}
   s.description = %q{Javascript packager and dependency resolver}
   s.email = %q{markizko@gmail.com}
@@ -94,7 +94,10 @@ Gem::Specification.new do |s|
     "features/step_definitions/cli_steps.rb",
     "features/support/env.rb",
     "jsus.gemspec",
+    "lib/extensions/rgl.rb",
     "lib/jsus.rb",
+    "lib/jsus/cli.rb",
+    "lib/jsus/compiler.rb",
     "lib/jsus/container.rb",
     "lib/jsus/middleware.rb",
     "lib/jsus/package.rb",
@@ -113,9 +116,11 @@ Gem::Specification.new do |s|
     "lib/jsus/util/validator.rb",
     "lib/jsus/util/validator/base.rb",
     "lib/jsus/util/validator/mooforge.rb",
+    "lib/jsus/util/watcher.rb",
     "markup/index_template.haml",
     "markup/stylesheet.css",
     "markup/template.haml",
+    "spec/benchmarks/topsort.rb",
     "spec/data/Basic/README",
     "spec/data/Basic/app/javascripts/Orwik/Source/Library/Color.js",
     "spec/data/Basic/app/javascripts/Orwik/Source/Widget/Input/Input.Color.js",
@@ -194,6 +199,7 @@ Gem::Specification.new do |s|
     "spec/data/test_source_one.js",
     "spec/data/unicode_source.js",
     "spec/data/unicode_source_with_bom.js",
+    "spec/extensions/rgl_spec.rb",
     "spec/jsus/container_spec.rb",
     "spec/jsus/middleware_spec.rb",
     "spec/jsus/package_spec.rb",
@@ -201,6 +207,7 @@ Gem::Specification.new do |s|
     "spec/jsus/pool_spec.rb",
     "spec/jsus/source_file_spec.rb",
     "spec/jsus/tag_spec.rb",
+    "spec/jsus/util/compressor_spec.rb",
     "spec/jsus/util/documenter_spec.rb",
     "spec/jsus/util/file_cache_spec.rb",
     "spec/jsus/util/inflection_spec.rb",
@@ -208,10 +215,12 @@ Gem::Specification.new do |s|
     "spec/jsus/util/tree_spec.rb",
     "spec/jsus/util/validator/base_spec.rb",
     "spec/jsus/util/validator/mooforge_spec.rb",
+    "spec/jsus/util/watcher_spec.rb",
+    "spec/jsus/util_spec.rb",
     "spec/shared/class_stubs.rb",
     "spec/spec_helper.rb"
   ]
-  s.homepage = %q{http://github.com/markiz/jsus}
+  s.homepage = %q{http://github.com/jsus/jsus}
   s.licenses = ["Public Domain"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
@@ -226,13 +235,17 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<rgl>, [">= 0"])
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
-      s.add_development_dependency(%q<cucumber>, [">= 0"])
+      s.add_development_dependency(%q<cucumber>, ["= 1.0.3"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_development_dependency(%q<murdoc>, ["~> 0.1.11"])
       s.add_development_dependency(%q<ruby-debug19>, [">= 0"])
+      s.add_development_dependency(%q<linecache>, ["= 0.45"])
       s.add_development_dependency(%q<ruby-debug>, [">= 0"])
       s.add_development_dependency(%q<fssm>, [">= 0"])
-      s.add_development_dependency(%q<yui-compressor>, [">= 0"])
+      s.add_development_dependency(%q<yuicompressor>, [">= 0"])
+      s.add_development_dependency(%q<uglifier>, [">= 0"])
+      s.add_development_dependency(%q<front-compiler>, [">= 0"])
+      s.add_development_dependency(%q<closure-compiler>, [">= 0"])
       s.add_development_dependency(%q<sinatra>, [">= 0"])
       s.add_development_dependency(%q<rack-test>, [">= 0"])
       s.add_development_dependency(%q<yard>, [">= 0"])
@@ -242,13 +255,17 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rgl>, [">= 0"])
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
-      s.add_dependency(%q<cucumber>, [">= 0"])
+      s.add_dependency(%q<cucumber>, ["= 1.0.3"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<murdoc>, ["~> 0.1.11"])
       s.add_dependency(%q<ruby-debug19>, [">= 0"])
+      s.add_dependency(%q<linecache>, ["= 0.45"])
       s.add_dependency(%q<ruby-debug>, [">= 0"])
       s.add_dependency(%q<fssm>, [">= 0"])
-      s.add_dependency(%q<yui-compressor>, [">= 0"])
+      s.add_dependency(%q<yuicompressor>, [">= 0"])
+      s.add_dependency(%q<uglifier>, [">= 0"])
+      s.add_dependency(%q<front-compiler>, [">= 0"])
+      s.add_dependency(%q<closure-compiler>, [">= 0"])
       s.add_dependency(%q<sinatra>, [">= 0"])
       s.add_dependency(%q<rack-test>, [">= 0"])
       s.add_dependency(%q<yard>, [">= 0"])
@@ -259,13 +276,17 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rgl>, [">= 0"])
     s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 0"])
-    s.add_dependency(%q<cucumber>, [">= 0"])
+    s.add_dependency(%q<cucumber>, ["= 1.0.3"])
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<murdoc>, ["~> 0.1.11"])
     s.add_dependency(%q<ruby-debug19>, [">= 0"])
+    s.add_dependency(%q<linecache>, ["= 0.45"])
     s.add_dependency(%q<ruby-debug>, [">= 0"])
     s.add_dependency(%q<fssm>, [">= 0"])
-    s.add_dependency(%q<yui-compressor>, [">= 0"])
+    s.add_dependency(%q<yuicompressor>, [">= 0"])
+    s.add_dependency(%q<uglifier>, [">= 0"])
+    s.add_dependency(%q<front-compiler>, [">= 0"])
+    s.add_dependency(%q<closure-compiler>, [">= 0"])
     s.add_dependency(%q<sinatra>, [">= 0"])
     s.add_dependency(%q<rack-test>, [">= 0"])
     s.add_dependency(%q<yard>, [">= 0"])
