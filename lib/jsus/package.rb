@@ -136,7 +136,7 @@ module Jsus
     # @api public
     def compile(directory = ".")
       fn = directory ? File.join(directory, filename) : nil
-      Packager.new(*(source_files.to_a + linked_external_dependencies.to_a)).pack(fn)
+      Packager.new(*source_files_for_compilation).pack(fn)
     end
 
     # Generates tree structure for files in package into a json file.
@@ -218,6 +218,13 @@ module Jsus
     def source_files
       @source_files ||= Container.new
     end
+
+    # Returns source files AND linked external dependencies joined in one array
+    # @return [Array]
+    # @api semipublic
+    def source_files_for_compilation
+      source_files.to_a + linked_external_dependencies.to_a
+    end # source_files_for_compilation
 
     # Container with extensions (they aren't compiled or included into #reqired_files list)
     # @return [Jsus::Container]

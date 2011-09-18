@@ -38,8 +38,10 @@ module Jsus
       @pool = preload_pool
       @package = load_package
       display_pool_stats(@pool) if options[:display_pool_stats]
-      @package_content = compile_package(@package)
-      post_process!(@package_content, options[:postproc]) if options[:postproc]
+
+      @resulting_sources = @package.source_files_for_compilation
+      @resulting_sources = post_process(@resulting_sources, options[:postproc]) if options[:postproc]
+      @package_content = compile_package(@resulting_sources)
 
       package_filename = @output_dir + @package.filename
 
@@ -57,20 +59,24 @@ module Jsus
       generate_docs if options[:documented_classes] && !options[:documented_classes].empty?
       output_benchmarks
     rescue Exception => e
+      $stderr.puts "Exception was raised: #{e.inspect}\n\nBacktrace: #{e.backtrace.join("\n")}"
       output_benchmarks
     end
 
     def preload_pool
-      if options[:deps_dir]
+      result = if options[:deps_dir]
         Jsus::Pool.new(options[:deps_dir])
       else
         Jsus::Pool.new
-      end.tap { checkpoint(:pool) }
+      end
+      checkpoint(:pool)
+      result
     end
 
     def load_package
       package = Jsus::Package.new(Pathname.new(options[:input_dir]), :pool => @pool)
       package.include_dependencies!
+      package.include_extensions!
       checkpoint(:dependencies)
       package
     end
@@ -99,14 +105,17 @@ EOF
       result << "\n"
     end
 
-    def compile_package(package)
-      package.compile(nil).tap { checkpoint(:compilation) }
+    def compile_package(sources)
+      result = Packager.new(*sources.to_a).pack(nil)
+      checkpoint(:compilation)
+      result
     end
 
     # Modificate content string
-    def post_process!(content, postproc)
-      Compiler.post_process!(content, postproc)
+    def post_process(source_files, processors)
+      result = Util::PostProcessor.process(source_files, processors)
       checkpoint(:postproc)
+      result
     end
 
     def compress_package(content)
