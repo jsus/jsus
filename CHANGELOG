@@ -1,4 +1,7 @@
 = Jsus Changelog
+== Version 0.3.6
+* Rebuilt with 1.8.7 ruby
+
 == Version 0.3.5
 Other changes:
 * Faster cycle search; fails fast and makes --no-cycle-search option obsolete
