@@ -1,3 +1,4 @@
+# Extensions for Ruby Graph Library
 module RGL
   class TopsortedGraphHasCycles < Exception; end
   class DirectedAdjacencyGraph
@@ -5,7 +6,7 @@ module RGL
     # cycles.
     #
     # @note Default implementation of topsort iterator is a bit faster, but it doesn't
-    # check for that condition.
+    #       check for cycles.
     # @return [Array] sorted vertices list
     # @raise [TopsortedGraphHasCycles] if graph has cycles
     # @api public
