@@ -68,7 +68,7 @@ cli = OptionParser.new do |opts|
     options[:validators] = (validators || []).map {|v| v.downcase }
   end
 
-  opts.on('--postproc [*PROCESSORS]', Array, 'performs postprocessing. Available postprocs:\n* moocompat12 -- removes mootools 1.2compat tags and their contents\n* mooltIE8 -- removes mootools ltIE8 compat tags and their contents') do |postprocs|
+  opts.on('--postproc [*PROCESSORS]', Array, 'performs postprocessing. Available postprocs:\n* moocompat12 -- removes mootools 1.2compat tags and their contents\n* mooltIE8 -- removes mootools ltIE8 compat tags and their contents\n* semicolon -- adds a semicolon in the beggining of every source file') do |postprocs|
     options[:postproc] = postprocs
   end
 

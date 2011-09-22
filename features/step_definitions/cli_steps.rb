@@ -1,7 +1,7 @@
 When /^I run "jsus (.*?)"$/ do |args|
   Dir.chdir DATA_DIR do
     `#{JSUS_CLI_PATH} #{args}`
-  end  
+  end
 end
 
 Then /^the following files should exist:$/ do |table|
@@ -14,16 +14,23 @@ Then /^the following files should exist:$/ do |table|
 end
 
 Then /^file "(.*?)" should contain$/ do |filename, content|
-  Dir.chdir DATA_DIR do    
+  Dir.chdir DATA_DIR do
     File.read(filename).should include(content)
-  end    
+  end
+end
+
+
+Then /^file "(.*?)" should begin with$/ do |filename, content|
+  Dir.chdir DATA_DIR do
+    File.read(filename).index(content).should == 0
+  end
 end
 
 
 Then /^file "(.*?)" should not contain$/ do |filename, content|
-  Dir.chdir DATA_DIR do    
+  Dir.chdir DATA_DIR do
     File.read(filename).should_not include(content)
-  end    
+  end
 end
 
 Then /^file "(.*?)" should contain valid JSON$/i do |filename|
@@ -31,7 +38,7 @@ Then /^file "(.*?)" should contain valid JSON$/i do |filename|
     json = nil
     lambda { json = JSON.load(File.read(filename)) }.should_not raise_error
     json.should_not be_nil
-  end    
+  end
 end
 
 Then /^file "(.*?)" should contain JSON equivalent to$/i do |filename, expected_json|
@@ -39,7 +46,7 @@ Then /^file "(.*?)" should contain JSON equivalent to$/i do |filename, expected_
     json = JSON.load(File.read(filename))
     expected = JSON.load(expected_json)
     json.should == expected
-  end    
+  end
 end
 
 
@@ -49,7 +56,7 @@ Then /^file "(.*?)" should have "(.*?)" (before|after) "(.*?)"$/ do |filename, w
     contents = File.read(filename)
     position << contents.index(what)
     position << contents.index(other)
-    
+
     case position
     when "before"
       position[0].should < position[1]

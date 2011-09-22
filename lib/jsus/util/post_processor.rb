@@ -4,8 +4,9 @@ module Jsus
       autoload :Base,        "jsus/util/post_processor/base"
       autoload :Moocompat12, "jsus/util/post_processor/moocompat12"
       autoload :MooltIE8,    "jsus/util/post_processor/mooltie8"
+      autoload :Semicolon,   "jsus/util/post_processor/semicolon"
 
-      AVAILABLE_PROCESSORS = ["mooltie8", "moocompat12"].freeze
+      AVAILABLE_PROCESSORS = ["mooltie8", "moocompat12", "semicolon"].freeze
       # Accepts a collection of source files and list of processors and applies
       # these processors to the sources.
       #
@@ -20,6 +21,8 @@ module Jsus
             Moocompat12.new(source_files).process
           when /mooltie8/i
             MooltIE8.new(source_files).process
+          when /semicolon/i
+            Semicolon.new(source_files).process
           else
             Jsus.logger.error "Unknown post-processor: #{processor}"
             source_files
