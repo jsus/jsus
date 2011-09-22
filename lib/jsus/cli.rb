@@ -154,13 +154,13 @@ EOF
     end
 
     def validate_sources
-      validators_map = {"mooforge" => Jsus::Util::Validator::Mooforge}
+      validators_map = {"mooforge" => Jsus::Util::Validator::Mooforge, "lint" => Jsus::Util::Validator::Lint}
       (options[:validators] || []).each do |validator_name|
         if validator = validators_map[validator_name]
           errors = validator.new(@pool.sources.to_a & @package.source_files.to_a).validation_errors
           unless errors.empty?
             Jsus.logger.info "Validator #{validator_name} found errors: " <<
-                             errors.map {|e| Jsus.logger.info "  * #{e}"}.join("\n")
+                             errors.map {|e| "  * #{e}"}.join("\n")
           end
         else
           Jsus.logger.info "No such validator: #{validator_name}"

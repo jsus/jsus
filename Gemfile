@@ -28,6 +28,12 @@ group :development do
   gem 'front-compiler',   :require => false
   gem 'closure-compiler', :require => false
 
+  gem 'execjs', :require => false
+
+  # Some of these might be neccessary, check out execjs runtimes
+  # gem 'therubyracer', :platform => :ruby,  :require => false
+  # gem 'therubyrhino', :platform => :jruby, :require => false
+
   gem 'sinatra'
   gem 'rack-test'
   gem 'yard'

@@ -64,7 +64,7 @@ cli = OptionParser.new do |opts|
     options[:no_syntax_highlight] = true
   end
 
-  opts.on('--validate-with [*VALIDATORS]', Array, 'performs a check against some of the validators. Available validators: mooforge') do |validators|
+  opts.on('--validate-with [*VALIDATORS]', Array, 'performs a check against some of the validators. Available validators: mooforge, lint') do |validators|
     options[:validators] = (validators || []).map {|v| v.downcase }
   end
 
