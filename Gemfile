@@ -15,12 +15,15 @@ group :development do
 
   gem "jeweler"
   gem "murdoc", "~> 0.1.11"
-  gem "ruby-debug19", :platforms => :ruby_19
 
-  # FIXME: linecache being ruby1.9+only
-  gem "linecache", "= 0.45", :platforms => :ruby_18
+  unless ENV["CI"]
+    gem "ruby-debug19", :platforms => :ruby_19
 
-  gem "ruby-debug",   :platforms => :ruby_18
+    # FIXME: linecache being ruby1.9+only
+    gem "linecache", "= 0.45", :platforms => :ruby_18
+    gem "ruby-debug",   :platforms => :ruby_18
+  end
+
   gem 'fssm'
 
   gem 'yuicompressor',    :require => false
