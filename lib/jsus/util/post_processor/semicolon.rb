@@ -8,7 +8,7 @@ module Jsus
         def process(options = {})
           source_files.map do |source|
             source = source.dup
-            source.original_content.gsub!(/^([^;])/, ";\n")
+            source.content = source.original_content.gsub(/^([^;])/, ";\n")
             source
           end
         end # process

@@ -14,6 +14,7 @@ describe Jsus::Util::PostProcessor::Semicolon do
     end
 
     it "should not mutate arguments" do
+      subject.process
       pool.sources.each {|source| source.content[0,1].should_not == ";" }
     end
   end
