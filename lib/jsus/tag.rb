@@ -30,6 +30,7 @@ module Jsus
     # @return [String]
     # @api public
     attr_reader :full_name
+    alias_method :to_s, :full_name
 
     # Name without namespace
     # @return [String]
@@ -79,7 +80,6 @@ module Jsus
     def name
       @name
     end
-    alias_method :to_s, :name
 
     # @return [Boolean] whether name is empty
     # @api public
