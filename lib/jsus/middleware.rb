@@ -175,7 +175,7 @@ module Jsus
     def generate_requires(path_string)
       files = path_string_to_files(path_string)
       if !files.empty?
-        response = Container.new(*files).map {|f| f.content }.join("\n")
+        response = Container.new(*files).map {|f| f.source }.join("\n")
         response = Jsus::Util::Compressor.compress(response, :method => self.class.settings[:compression_method]) if request_options[:compress]
         respond_with(response)
       else
@@ -262,8 +262,7 @@ module Jsus
     # @api semipublic
     def get_associated_files(source_file_or_package)
       if package = pool.packages.detect {|pkg| pkg.name == source_file_or_package}
-        package.include_dependencies!
-        package.linked_external_dependencies.to_a + package.source_files.to_a
+        pool.compile_package(package).to_a
       elsif source_file = pool.lookup(source_file_or_package)
         pool.lookup_dependencies(source_file).to_a << source_file
       else
