@@ -1,7 +1,8 @@
 Feature: structure json files
   In order to have programmatic ability to introspect resulting packages, we
   generate some extra files.
-  
+
+  @wip
   Scenario: auto-generation of tree.json and scripts.json
     When I run "jsus Basic tmp"
     Then the following files should exist:
@@ -51,6 +52,5 @@ Feature: structure json files
 
           ]
         }
-      }      
+      }
       """
-    
