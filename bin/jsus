@@ -92,14 +92,14 @@ cli = OptionParser.new do |opts|
   opts.on_tail('-b', '--benchmark', 'shows time spent on various stages') do
     options[:benchmark] = true
   end
-
-  opts.on_tail('--without-scripts-info', 'do not generate scripts.json') do
-    options[:without_scripts_info] = true
-  end
-
-  opts.on_tail('--without-tree-info', 'do not generate tree.json') do
-    options[:without_tree_info] = true
-  end
+  #
+  # opts.on_tail('--without-scripts-info', 'do not generate scripts.json') do
+  #   options[:without_scripts_info] = true
+  # end
+  #
+  # opts.on_tail('--without-tree-info', 'do not generate tree.json') do
+  #   options[:without_tree_info] = true
+  # end
 
   opts.on_tail('--watch', 'watch file system events for *.js files in subdirectories and rerun jsus with the same parameters') do
     options[:watch] = true
