@@ -138,8 +138,8 @@ EOF
     end
 
     def generate_includes
-      includes_root = Pathname.new(options[:includes_root] || @output_dir)
-      Compiler.generate_includes(@package, includes_root, @output_dir + "includes.js")
+      includes_root = Pathname.new(options[:includes_root] || @output_dir).to_s
+      File.open(File.join(@output_dir, "includes.js"), "w+") {|f| f.puts Util::CodeGenerator.generate_includes(@resulting_sources.required_files(includes_root)) }
       checkpoint(:includes)
     end
 
