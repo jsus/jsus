@@ -3,6 +3,7 @@ module Jsus
   # Package is a (self-contained) unit with all the info required to build
   # a javascript package.
   #
+
   class Package
     # directory which this package resides in (full path)
     attr_accessor :directory
@@ -10,7 +11,6 @@ module Jsus
     attr_accessor :pool
 
     # Constructors
-
     #
     # Creates a package from given directory.
     #

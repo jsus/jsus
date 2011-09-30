@@ -19,7 +19,6 @@ Then /^file "(.*?)" should contain$/ do |filename, content|
   end
 end
 
-
 Then /^file "(.*?)" should begin with$/ do |filename, content|
   Dir.chdir DATA_DIR do
     File.read(filename).index(content).should == 0
