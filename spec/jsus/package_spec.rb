@@ -24,7 +24,7 @@ describe Jsus::Package do
         end
 
         it "should set up outside dependencies" do
-          subject.requires.map {|r| r.to_s}.should =~ ["core/Class"]
+          subject.requires.map {|r| r.to_s}.should =~ ["Core/Class"]
         end
 
         it "should set directory field" do
@@ -43,7 +43,7 @@ describe Jsus::Package do
         it "should load header from package.json" do
           subject.name.should == "Sheet"
           subject.provides.map {|p| p.to_s}.should =~ ["Sheet/Sheet", "Sheet/SheetParser.CSS"]
-          subject.requires.map {|r| r.to_s}.should =~ ["Sheet/combineRegExp"]
+          subject.requires.map {|r| r.to_s}.should =~ ["Sheet/CombineRegExp"]
         end
 
       end

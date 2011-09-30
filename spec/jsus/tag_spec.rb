@@ -44,10 +44,8 @@ describe Jsus::Tag do
   end
 
   describe "#==" do
-    pending "should translate mooforge styled names into jsus-styled names" do
+    it "should translate mooforge styled names into jsus-styled names" do
       Jsus::Tag.new("mootools_core/Wtf").should      == Jsus::Tag.new("MootoolsCore/Wtf")
-      Jsus::Tag.new("Effects.Fx/Hello.World").should == Jsus::Tag.new("EffectsFx/Hello.World")
-      Jsus::Tag.new("effects.fx/Wtf").should         == Jsus::Tag.new("EffectsFx/Wtf")
     end
 
     it "should distinguish between same name in different namespaces" do

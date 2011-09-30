@@ -54,15 +54,17 @@ module Jsus
     # @api public
     def lookup(source_or_key)
       case source_or_key
-        when String
-          lookup(Tag[source_or_key])
-        when Tag
-          provides_map[source_or_key]
-        when SourceFile
-          source_or_key
-        else
-          raise "Illegal lookup query. Expected String, Tag or SourceFile, " <<
-                "given #{source_or_key.inspect}, an instance of #{source_or_key.class.name}."
+      when nil
+        nil
+      when String
+        lookup(Tag[source_or_key])
+      when Tag
+        provides_map[source_or_key]
+      when SourceFile
+        source_or_key
+      else
+        raise "Illegal lookup query. Expected String, Tag or SourceFile, " <<
+              "given #{source_or_key.inspect}, an instance of #{source_or_key.class.name}."
       end
     end
 

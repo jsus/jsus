@@ -29,28 +29,24 @@ module Jsus
     # Full name, including namespace
     # @return [String]
     # @api public
-    attr_reader :full_name
+    def full_name
+      if namespace
+        "#{namespace}#{SEPARATOR}#{name}"
+      else
+        "#{name}"
+      end
+    end # full_name
     alias_method :to_s, :full_name
-
-    # Name without namespace
-    # @return [String]
-    # @api public
-    attr_reader :name
-
-    # Namespace part of tag name or nil
-    # @return [String, nil]
-    # @api public
-    attr_reader :namespace
 
 
     # Assigns full name
     # @param [String] full_name full tag name, including namespace
     # @api semipublic
     def full_name=(full_name)
-      @full_name = full_name
-      name_parts = @full_name.split(SEPARATOR)
-      @namespace = name_parts[0..-2].join(SEPARATOR) if name_parts.size > 1
-      @name      = name_parts[-1]
+      @full_name     = full_name
+      name_parts     = @full_name.split(SEPARATOR)
+      self.namespace = name_parts[0..-2].join(SEPARATOR) if name_parts.size > 1
+      self.name      = name_parts[-1]
     end # full_name=
 
     # Instantiates a tag.
@@ -80,6 +76,37 @@ module Jsus
     def name
       @name
     end
+
+    # Set name.
+    # @param [String] name
+    # @api semipublic
+    def name=(name)
+      @name = normalize(name)
+    end # name=
+
+
+    # Name without namespace
+    # @return [String]
+    # @api public
+    attr_reader :namespace
+
+    # Set namespace
+    # @param [String] namespace
+    # @api semipublic
+    def namespace=(namespace)
+      @namespace = normalize(namespace)
+    end # namespace=
+
+    # Normalizes name or namespace (converts snake_case to MixedCase)
+    # @param [String] string
+    # @return [String]
+    # @api semipublic
+    def normalize(string)
+      return unless string
+      return string if string.include?("*")
+      parts = string.split(SEPARATOR)
+      parts.map {|part| Util::Inflection.random_case_to_mixed_case_preserve_dots(part) }.join(SEPARATOR)
+    end # normalize
 
     # @return [Boolean] whether name is empty
     # @api public

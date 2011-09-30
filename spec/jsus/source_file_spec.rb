@@ -149,7 +149,7 @@ describe Jsus::SourceFile do
 
     it "should include full-form requirement tags for external dependencies" do
       subject = described_class.from_file("spec/data/OutsideDependencies/app/javascripts/Orwik/Source/Widget/Widget.js", :namespace => "Orwik")
-      subject.to_hash["requires"].should == ["core/Class"]
+      subject.to_hash["requires"].should == ["Core/Class"]
     end
   end
 end
