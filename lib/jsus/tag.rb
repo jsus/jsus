@@ -90,7 +90,7 @@ module Jsus
     # @api public
     def ==(other)
       if other.kind_of?(Tag)
-        self.name == other.name
+        self.name == other.name && self.namespace == other.namespace
       else
         super
       end
@@ -103,7 +103,7 @@ module Jsus
 
     # @api semipublic
     def hash
-      self.name.hash
+      [self.name, self.namespace].hash
     end
 
     # @return [String] human-readable representation
