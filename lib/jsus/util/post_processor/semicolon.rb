@@ -6,10 +6,10 @@ module Jsus
         # @return [Array]
         # @see Jsus::Util::PostProcessor::Base#process
         def process(options = {})
-          source_files.map do |source|
-            source = source.dup
-            source.content = source.original_content.gsub(/^([^;])/, ";\n")
-            source
+          source_files.map do |file|
+            file = file.dup
+            file.source = file.source.gsub(/^([^;])/, ";\n")
+            file
           end
         end # process
       end # class Semicolon

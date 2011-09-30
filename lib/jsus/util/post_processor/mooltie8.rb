@@ -6,13 +6,13 @@ module Jsus
         # @return [Array]
         # @see Jsus::Util::PostProcessor::Base#process
         def process(options = {})
-          source_files.map do |source|
-            source = source.dup
-            source.content = source.original_content.gsub(/\/\/<ltIE8>.*?\/\/<\/ltIE8>/m, '')
-            source.content = source.original_content.gsub(/\/\*<ltIE8>\*\/.*?\/\*<\/ltIE8>\*\//m, '')
-            source
+          source_files.map do |file|
+            file = file.dup
+            file.source = file.source.gsub(/\/\/<ltIE8>.*?\/\/<\/ltIE8>/m, '')
+            file.source = file.source.gsub(/\/\*<ltIE8>\*\/.*?\/\*<\/ltIE8>\*\//m, '')
+            file
           end
-        end # process        
+        end # process
       end # class MooltIE8
     end # module PostProcessor
   end # module Util

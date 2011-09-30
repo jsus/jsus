@@ -8,16 +8,16 @@ describe Jsus::Util::PostProcessor::MooltIE8 do
 
   describe "#process" do
     subject { described_class.new(pool) }
-    let!(:source) { pool.sources.detect {|s| s.content.index("ltIE8") } }
+    let!(:source) { pool.sources.detect {|s| s.source.index("ltIE8") } }
 
     it "should remove ltIE8 tags" do
-      subject.process.each {|s| s.content.index("ltIE8").should be_nil }
+      subject.process.each {|s| s.source.index("ltIE8").should be_nil }
     end
 
     it "should not mutate arguments" do
-      source.content.index("ltIE8").should_not be_nil
+      source.source.index("ltIE8").should_not be_nil
       subject.process
-      source.content.index("ltIE8").should_not be_nil
+      source.source.index("ltIE8").should_not be_nil
     end
   end
 end

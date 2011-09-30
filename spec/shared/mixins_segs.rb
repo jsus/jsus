@@ -1,5 +1,5 @@
 shared_examples_for "Jsus::Util::Mixins::OperatesOnSources" do
-  let(:sources) { (0..3).map {|i| Source.new } }
+  let(:sources) { (0..3).map {|i| Jsus::SourceFile.from_file("spec/data/test_source_one.js") } }
   it "should respond to source_files, source_files=" do
     subject.should respond_to(:source_files, :source_files=)
   end
