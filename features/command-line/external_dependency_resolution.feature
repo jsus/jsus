@@ -1,7 +1,7 @@
 Feature: external dependencies
   In order to resolve dependencies, jsus should be able to preload them into
   pool.
-  
+
   Scenario: basic external dependency
     When I run "jsus ExternalDependency tmp -d ExternalDependency/Mootools"
     Then the following files should exist:
@@ -48,7 +48,7 @@ Feature: external dependencies
       */
       """
     And file "tmp/package.js" should have "script: Core.js" before "script: Color.js"
-  
+
   Scenario: external dependency with external dependency
     When I run "jsus ExternalDependencyWithExternalDependency tmp -d ExternalDependencyWithExternalDependency"
     Then the following files should exist:
@@ -67,7 +67,7 @@ Feature: external dependencies
       authors:
         - Mark Abramov
 
-      requires: 
+      requires:
         - Mootools/Core
 
       provides: [Core]

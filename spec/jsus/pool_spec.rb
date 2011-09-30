@@ -3,9 +3,9 @@ describe Jsus::Pool do
   let(:input_dir) { "spec/data/ChainDependencies/app/javascripts" }
   let(:packages) {
     [
-      Jsus::Package.new("#{input_dir}/Mash",  :pool => subject),
-      Jsus::Package.new("#{input_dir}/Class", :pool => subject),
-      Jsus::Package.new("#{input_dir}/Hash",  :pool => subject)
+      Jsus::Package.new("#{input_dir}/Mash"),
+      Jsus::Package.new("#{input_dir}/Class"),
+      Jsus::Package.new("#{input_dir}/Hash")
     ]
   }
 
@@ -34,7 +34,7 @@ describe Jsus::Pool do
 
       it "should add all the source files to pool" do
         subject.should have_exactly(3).sources
-        subject.sources.map {|s| s.provides_names }.flatten.should include("Mash/Mash", "Hash/Hash", "Class/Class")
+        subject.sources.map {|s| s.provides.map {|tag| tag.to_s } }.flatten.should include("Mash/Mash", "Hash/Hash", "Class/Class")
       end
 
       it "should keep track of extensions" do
@@ -56,9 +56,7 @@ describe Jsus::Pool do
 
 
   describe "#lookup" do
-    before(:each) do
-      packages.each {|package| subject << package.source_files }
-    end
+    before(:each) { packages.each {|package| subject << package} }
 
     it "should find a source file providing given full name" do
       subject.lookup("Class/Class").should == sources[1]
@@ -70,13 +68,6 @@ describe Jsus::Pool do
 
     it "should allow tags" do
       subject.lookup(Jsus::Tag["Class/Class"]).should == sources[1]
-    end
-
-    it "should return replacements whenever possible" do
-      pkg = Jsus::Package.new("spec/data/ClassReplacement",  :pool => subject)
-      subject << pkg.source_files
-      subject.lookup("Class/Class").should == pkg.source_files[0]
-      subject.lookup(Jsus::Tag["Class/Class"]).should == pkg.source_files[0]
     end
   end
 
@@ -104,8 +95,8 @@ describe Jsus::Pool do
     end
 
     it "should return a container with files and dependencies" do
-      subject.lookup_dependencies("Mash/Mash").should == [sources[1], sources[2]]
-      subject.lookup_dependencies(Jsus::Tag["Mash/Mash"]).should == [sources[1], sources[2]]
+      subject.lookup_dependencies("Mash/Mash").should =~ [sources[1], sources[2]]
+      subject.lookup_dependencies(Jsus::Tag["Mash/Mash"]).should =~ [sources[1], sources[2]]
     end
 
     it "should return empty array if pool doesn't contain given source" do
@@ -117,7 +108,7 @@ describe Jsus::Pool do
       let(:input_dir) { "spec/data/DependenciesWildcards/app/javascripts" }
 
       it "should support wildcards" do
-        subject.lookup_dependencies("Mash/Mash").should == [sources[1], sources[2]]
+        subject.lookup_dependencies("Mash/Mash").should =~ [sources[1], sources[2]]
       end
     end
   end
@@ -136,14 +127,14 @@ describe Jsus::Pool do
     let(:input_dir) { "spec/data/Extensions/app/javascripts" }
     subject { Jsus::Pool.new(input_dir) }
 
-    it "should return empty array if there's not a single extension for given tag" do
-      subject.lookup_extensions("Core/WTF").should be_empty
-      subject.lookup_extensions(Jsus::Tag["Core/WTF"]).should be_empty
+    it "should return empty array if there's not a single extension for given file" do
+      source = Jsus::SourceFile.from_file("spec/data/test_source_one.js", :namespace => "Test")
+      subject.lookup_extensions(source).should be_empty
     end
 
     it "should return an array with extensions if there are extensions for given tag" do
-      subject.lookup_extensions("Core/Class").should have_exactly(1).item
-      subject.lookup_extensions(Jsus::Tag["Core/Class"]).should have_exactly(1).item
+      source = subject.lookup("Core/Class")
+      subject.lookup_extensions(source).should_not be_empty
     end
   end
 

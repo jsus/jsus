@@ -10,12 +10,12 @@ describe Jsus::Util::PostProcessor::Semicolon do
     subject { described_class.new(pool) }
 
     it "should add semicolon to the beginning of each file" do
-      subject.process.each {|source| source.content[0,1].should == ";" }
+      subject.process.each {|source| source.source[0,1].should == ";" }
     end
 
     it "should not mutate arguments" do
       subject.process
-      pool.sources.each {|source| source.content[0,1].should_not == ";" }
+      pool.sources.each {|source| source.source[0,1].should_not == ";" }
     end
   end
 end

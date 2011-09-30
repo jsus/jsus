@@ -104,8 +104,8 @@ describe Jsus::Util::Tree do
     end
 
     it "should allow tags for nodes insertion" do
-      subject.insert(Jsus::Tag["hello"], "world")
-      subject.root.children[0].full_path.should == "/hello"
+      subject.insert(Jsus::Tag["Hello"], "world")
+      subject.root.children[0].full_path.should == "/Hello"
       subject.root.children[0].value.should == "world"
     end
   end

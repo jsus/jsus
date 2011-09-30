@@ -12,16 +12,21 @@ module Jsus
     #
     # Inits packager with the given sources.
     #
-    # @param [*SourceFile] sources source files
+    # @param [Container, Array] sources source files
     # @api public
-    def initialize(*sources)
-      self.container = Container.new(*sources)
+    def initialize(sources)
+      @sources = case sources
+      when Array
+        Container.new(*sources)
+      else
+        sources
+      end
     end
 
     # @return [Jsus::Container] container with source files
     # @api public
     def sources
-      container
+      @sources
     end
 
     # Concatenates all the sources' contents into a single string.
@@ -31,8 +36,7 @@ module Jsus
     # @return [String] concatenated source files
     # @api public
     def pack(output_file = nil)
-      result = sources.map {|s| s.content }.join("\n")
-
+      result = sources.map {|s| s.source }.join("\n")
       if output_file
         FileUtils.mkdir_p(File.dirname(output_file))
         File.open(output_file, "w") {|f| f << result }

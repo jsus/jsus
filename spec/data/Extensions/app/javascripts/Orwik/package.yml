@@ -6,3 +6,4 @@ copyright: Somebody
 authors: Someone
 sources:
   - Extensions/Class.js
+  - Extensions/Mash.js

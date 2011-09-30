@@ -1,4 +1,9 @@
 = Jsus Changelog
+== Version 0.4.0
+Other changes:
+* Redesigned class interaction API, trying to avoid cyclic dependencies at all
+  costs.
+
 == Version 0.3.6
 * Rebuilt with 1.8.7 ruby
 

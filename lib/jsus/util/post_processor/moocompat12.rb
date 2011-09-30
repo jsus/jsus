@@ -6,11 +6,11 @@ module Jsus
         # @return [Array]
         # @see Jsus::Util::PostProcessor::Base#process
         def process(options = {})
-          source_files.map do |source|
-            source = source.dup
-            source.content = source.original_content.gsub(/\/\/<1.2compat>.*?\/\/<\/1.2compat>/m, '')
-            source.content = source.original_content.gsub(/\/\*<1.2compat>\*\/.*?\/\*<\/1.2compat>\*\//m, '')
-            source
+          source_files.map do |file|
+            file = file.dup
+            file.source = file.source.gsub(/\/\/<1.2compat>.*?\/\/<\/1.2compat>/m, '')
+            file.source = file.source.gsub(/\/\*<1.2compat>\*\/.*?\/\*<\/1.2compat>\*\//m, '')
+            file
           end
         end # process
       end # class Moocompat12

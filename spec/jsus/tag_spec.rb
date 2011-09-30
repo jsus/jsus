@@ -4,59 +4,23 @@ describe Jsus::Tag do
   subject { Jsus::Tag.new("Wtf") }
 
   context "initialization" do
-    it "should set given name" do
-      Jsus::Tag.new("Wtf").name.should == "Wtf"
+    it "should set given full name" do
+      Jsus::Tag.new("Wtf").full_name.should == "Wtf"
+      Jsus::Tag.new("Core/Wtf").full_name.should == "Core/Wtf"
     end
 
-    it "should truncate leading slash with optional period (.)" do
-      Jsus::Tag.new("/Class").name.should == "Class"
-    end
-
-    it "should parse package name" do
-      Jsus::Tag.new("Class").package_name.should == ""
-      Jsus::Tag.new("Core/Wtf").package_name.should == "Core"
-      Jsus::Tag.new("Core/Subpackage/Wtf").package_name.should == "Core/Subpackage"
-    end
-
-    it "should allow explicit package setting" do
-      Jsus::Tag.new("Wtf", :package => Package.new(:name => "Core")).name.should == "Core/Wtf"
-    end
-
-    it "should set external flag if it looks like an external dependency and not given a package option" do
-      Jsus::Tag.new("Core/WTF").should be_external
-    end
-
-    it "should not set external flag if it doesn't look like an external dependency and not given a package option" do
-      Jsus::Tag.new("WTF").should_not be_external
-    end
-
-    it "should set external flag if package from options is not the same as parsed package" do
-      Jsus::Tag.new("Core/WTF", :package => Package.new(:name => "Class")).should be_external
-    end
-
-    it "should not set external flag if package from options is the same as parsed package" do
-      Jsus::Tag.new("Core/WTF", :package => Package.new(:name => "Core")).should_not be_external
-    end
-
-    it "should use implcit package setting whenever possible" do
-      Jsus::Tag.new("Class/Wtf", :package => Package.new(:name => "Core")).name.should == "Class/Wtf"
-    end
-
-    it "should return a given tag if given a tag" do
-      Jsus::Tag.new(subject).should == subject
-    end
-
-    it "should translate mooforge styled names into jsus-styled names" do
-      Jsus::Tag.new("mootools_core/Wtf").should      == Jsus::Tag.new("MootoolsCore/Wtf")
-      Jsus::Tag.new("Effects.Fx/Hello.World").should == Jsus::Tag.new("EffectsFx/Hello.World")
-      Jsus::Tag.new("effects.fx/Wtf").should         == Jsus::Tag.new("EffectsFx/Wtf")
+    it "when given a tag it should return that tag" do
+      tag = Jsus::Tag.new("Wtf")
+      new_tag = Jsus::Tag.new(tag)
+      new_tag.should           == tag
+      new_tag.object_id.should == tag.object_id
     end
   end
 
   describe "#name" do
-    it "should return full name unless asked for a short form" do
-      Jsus::Tag.new("Core/Wtf").name.should == "Core/Wtf"
-      Jsus::Tag.new("Core/Subpackage/Wtf").name.should == "Core/Subpackage/Wtf"
+    it "should return short form of the tag" do
+      Jsus::Tag.new("Core/Wtf").name.should == "Wtf"
+      Jsus::Tag.new("Core/Subpackage/Wtf").name.should == "Wtf"
     end
 
     it "should not add slashes if package name is not set" do
@@ -66,35 +30,26 @@ describe Jsus::Tag do
     it "should strip leading slashes" do
       Jsus::Tag.new("./Wtf").name.should == "Wtf"
     end
-
-    it "should remove package from short form of non-external tags" do
-      tag = Jsus::Tag.new("Core/WTF")
-      tag.external = false
-      tag.name(:short => true).should == "WTF"
-    end
-
   end
 
-  describe ".normalize_name_and_options" do
-    it "should parse name as full name if no options given" do
-      normalized = Jsus::Tag.normalize_name_and_options("Core/Wtf")
-      normalized[:name].should == "Wtf"
-      normalized[:package_name].should == "Core"
+  describe "#namespace" do
+    it "should be nil for empty namespace" do
+      Jsus::Tag.new("Class").namespace.should be_nil
     end
 
-    it "should strip leading slash" do
-      Jsus::Tag.normalize_name_and_options("./Core/Wtf")[:package_name].should == "Core"
-      Jsus::Tag.normalize_name_and_options("./Core/Wtf")[:name].should == "Wtf"
-      Jsus::Tag.normalize_name_and_options("./Wtf")[:name].should == "Wtf"
+    it "should be non-empty for non-empty namespace" do
+      Jsus::Tag.new("Core/Class").namespace.should == "Core"
+      Jsus::Tag.new("Mootools/Core/Class").namespace.should == "Mootools/Core"
+    end
+  end
+
+  describe "#==" do
+    it "should translate mooforge styled names into jsus-styled names" do
+      Jsus::Tag.new("mootools_core/Wtf").should      == Jsus::Tag.new("MootoolsCore/Wtf")
     end
 
-    it "should use given package name whenever no package name can be restored from name" do
-      Jsus::Tag.normalize_name_and_options("Wtf", :package => Package.new(:name => "Core"))[:package_name].should == "Core"
-      Jsus::Tag.normalize_name_and_options("./Wtf", :package => Package.new(:name => "Core"))[:package_name].should == "Core"
-    end
-
-    it "should parse name as full name whenever possible" do
-      Jsus::Tag.normalize_name_and_options("Class/Wtf", :package => Package.new(:name => "Core"))[:package_name].should == "Class"
+    it "should distinguish between same name in different namespaces" do
+      Jsus::Tag.new("Mootools/Slick.Finder").should_not == Jsus::Tag.new("Slick/Slick.Finder")
     end
   end
 
