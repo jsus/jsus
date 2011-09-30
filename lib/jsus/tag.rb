@@ -109,7 +109,7 @@ module Jsus
     # @return [String] human-readable representation
     # @api public
     def inspect
-      "<Jsus::Tag: #{name}>"
+      "<Jsus::Tag: #{full_name}>"
     end
   end
 end
