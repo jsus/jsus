@@ -1,1 +1,1 @@
-default: --format pretty --color --tags ~@wip
+default: "--format pretty --color --tags ~@wip"
