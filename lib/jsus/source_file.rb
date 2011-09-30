@@ -8,14 +8,17 @@ module Jsus
   # It contains general info about source as well as file content.
   #
   class SourceFile
+    # Package owning the sourcefile
+    # Is not directly used in SourceFile, but might be useful for introspection.
+    attr_accessor :package
+
+    # Original filename (immutable)
+    attr_accessor :original_filename
+
     # Full filename (when initialized from file)
     attr_accessor :filename
     alias_method :path, :filename
     alias_method :path=, :filename=
-
-    # Package owning the sourcefile
-    # Is not directly used in SourceFile, but might be useful for introspection.
-    attr_accessor :package
 
     # Original source code (immutable)
     attr_reader :original_source
@@ -57,24 +60,16 @@ module Jsus
     def self.from_file(filename, options = {})
       filename = File.expand_path(filename)
       raise BadSourceFileException, "File does not exist." unless File.exists?(filename)
-
       source = File.open(filename, 'r:utf-8') {|f| f.read }
       source_file = new(source, options)
-      source_file.filename = filename
+      source_file.filename = source_file.original_filename = filename
+      source_file.original_filename.freeze
       source_file
     rescue Exception => e
       e.message.sub! /^/, "Unexpected exception happened while processing #{filename}: "
       Jsus.logger.error e.message
       raise e
     end
-
-
-    # Returns source with all the extensions and replacements included.
-    # @return [String]
-    # @api public
-    def full_source
-      ([source] + linked_extensions.map {|ext| ext.full_source }).join("\n")
-    end # full_source
 
     # @return [Hash] a header parsed from YAML-formatted source file first comment.
     # @api public
@@ -136,36 +131,22 @@ module Jsus
       extends && !extends.empty?
     end
 
-    # @return [Array] new_value array of linked extensions for given source.
+    # @return [Boolean] whether the source file is an extension.
     # @api public
-    def linked_extensions
-      @extensions ||= []
-    end
+    def replacement?
+      replaces && !replaces.empty?
+    end # replacement?
 
-    # Links a source file as an extension
-    # @param [Jsus::SourceFile] ext source file to link
-    # @return [self]
-    # @api public
-    def link_extension(ext)
-      linked_extensions << ext
-      self
-    end # link_extension
-
-    # Links a replacement for the source. Actually replaces @source ivar
-    # @param [Jsus::SourceFile] replacement
-    # @return [self]
-    # @api public
-    def link_replacement(replacement)
-      @source   = replacement.source.dup
-      @filename = replacement.filename
-      self
-    end # link_replacement
+    def reset
+      @source   = @original_source.dup
+      @filename = @original_filename.dup if @original_filename
+    end # reset_linked
 
     # @return [Array] array of files required by this files including all the filenames for extensions.
     #    SourceFile filename always goes first, all the extensions are unordered.
     # @api public
     def required_files
-      [filename, linked_extensions.map {|e| e.filename}].flatten
+      [filename].flatten
     end
 
     # @return [Hash] hash containing basic info with dependencies/provides tags' names
@@ -184,7 +165,7 @@ module Jsus
     # @return [String]
     # @api public
     def inspect
-      self.to_hash.inspect
+      self.to_hash.merge("namespace" => namespace).inspect
     end
 
     # @api public

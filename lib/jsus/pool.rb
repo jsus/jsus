@@ -23,7 +23,7 @@ module Jsus
           # one level of symlinks
           # See also: http://stackoverflow.com/questions/357754/can-i-traverse-symlinked-directories-in-ruby-with-a-glob
           Dir[File.join(dir, '**{,/*/**}', 'package.{yml,json}')].uniq.each do |package_path|
-            Package.new(File.dirname(package_path), :pool => self)
+            self << Package.new(File.dirname(package_path))
           end
         end
       end
@@ -87,12 +87,19 @@ module Jsus
       result.sort!
     end
 
-    # @param [String, Jsus::Tag] tag_or_tag_key
-    # @return [Array] array with source files with extensions for given tag.
+    # Returns replacement for given source file.
+    # @param [Jsus::SourceFile]
+    # @return [Jsus::SourceFile, nil]
     # @api public
-    def lookup_extensions(tag_or_tag_key)
-      tag = Tag[tag_or_tag_key]
-      extensions_map[tag]
+    def lookup_replacement(source)
+      source.provides.detect {|tag| replacement_map[tag] }
+    end # lookup_replacement
+
+    # @param [Jsus::SourceFile]
+    # @return [Array] array with source files with extensions for given source file
+    # @api public
+    def lookup_extensions(source)
+      source.provides.map {|tag| extensions_map[tag] }.flatten.compact
     end
 
     #
@@ -124,14 +131,29 @@ module Jsus
       when source_or_sources_or_package.kind_of?(Package)
         package = source_or_sources_or_package
         packages << package
-        package.source_files.each {|s| s.pool = self }
-        package.extensions.each {|e| e.pool = self }
+        package.source_files.each {|s| self << s }
+        package.extensions.each   {|e| self << e }
       when source_or_sources_or_package.kind_of?(Array) || source_or_sources_or_package.kind_of?(Container)
         sources = source_or_sources_or_package
         sources.each {|s| self << s}
       end
       self
     end
+
+    # @param [Jsus::Package]
+    # @return [Array]
+    # @api public
+    def compile_package(package)
+      result = []
+      package.source_files.each do |source|
+        result << source
+        result << lookup_replacement(source)
+        result << lookup_dependencies(source)
+        result << lookup_extensions(source)
+      end
+      result = result.flatten
+      Container.new(result)
+    end # compile_package
 
     #
     # Drops any cached info

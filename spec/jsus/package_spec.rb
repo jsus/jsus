@@ -30,6 +30,10 @@ describe Jsus::Package do
         it "should set directory field" do
           subject.directory.should == File.expand_path(input_dir)
         end
+
+        it "should assign source file itself as a package" do
+          subject.source_files.each {|sf| sf.package.should == subject }
+        end
       end
 
       context "with a package.json" do

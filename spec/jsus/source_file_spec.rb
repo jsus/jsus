@@ -116,58 +116,6 @@ describe Jsus::SourceFile do
       subject = described_class.from_file(filename)
       subject.required_files.should == [File.expand_path(filename)]
     end
-
-    it "should include extensions" do
-      subject = described_class.from_file(filename)
-      extension = described_class.from_file("spec/data/extension_1.js")
-      subject.link_extension(extension)
-      subject.required_files.should == [File.expand_path(filename), extension.filename]
-    end
-
-    it "should replace original filename with replacement filename" do
-      subject     = described_class.from_file(filename)
-      replacement = described_class.from_file("spec/data/replacement.js")
-      subject.link_replacement(replacement)
-      subject.required_files.should == [replacement.filename]
-    end
-  end
-
-  describe "#full_source" do
-    subject { described_class.from_file(filename) }
-    context "when no extensions or replacements are linked" do
-      it "should be equal to source" do
-        subject.full_source.should == subject.source
-      end
-    end
-
-    context "when extensions are linked" do
-      subject { described_class.from_file(filename) }
-      let(:extensions) { [
-        described_class.from_file("spec/data/extension_1.js"),
-        described_class.from_file("spec/data/extension_2.js")
-      ] }
-
-      before(:each) { extensions.each {|ext| subject.link_extension(ext) } }
-
-      it "should include extensions in some order" do
-        subject.full_source.should include(subject.source)
-        subject.full_source.should include(extensions[0].source)
-        subject.full_source.should include(extensions[1].source)
-        subject.full_source.index(subject.source).should < subject.full_source.index(extensions[0].source)
-        subject.full_source.index(subject.source).should < subject.full_source.index(extensions[1].source)
-      end
-    end
-
-    context "when replacement is linked" do
-      subject { described_class.from_file(filename) }
-      let(:replacement) { described_class.from_file("spec/data/replacement.js") }
-      before(:each) { subject.link_replacement(replacement) }
-
-      it "should not include original source and should include replacement source instead" do
-        subject.full_source.should include(replacement.source)
-        subject.full_source.should_not include(subject.original_source)
-      end
-    end
   end
 
   it "should allow quirky mooforge dependencies syntax" do

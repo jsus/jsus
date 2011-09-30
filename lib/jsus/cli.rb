@@ -35,11 +35,12 @@ module Jsus
     def launch
       checkpoint(:start)
       @output_dir = setup_output_directory
-      @pool = preload_pool
-      @package = load_package
+      @pool       = preload_pool
+      @package    = load_package
+      @pool       << @package
       display_pool_stats(@pool) if options[:display_pool_stats]
 
-      @resulting_sources = @package.source_files_for_compilation
+      @resulting_sources = @pool.compile_package(@package)
       @resulting_sources = post_process(@resulting_sources, options[:postproc]) if options[:postproc]
       @package_content = compile_package(@resulting_sources)
 
@@ -53,7 +54,7 @@ module Jsus
 
       package_filename.open('w') {|f| f << @package_content  }
 
-      generate_supplemental_files
+      # generate_supplemental_files
       validate_sources
       generate_includes if options[:generate_includes]
       generate_docs if options[:documented_classes] && !options[:documented_classes].empty?
@@ -74,10 +75,7 @@ module Jsus
     end
 
     def load_package
-      package = Jsus::Package.new(Pathname.new(options[:input_dir]), :pool => @pool)
-      package.include_dependencies!
-      package.include_extensions!
-      checkpoint(:dependencies)
+      package = Jsus::Package.new(Pathname.new(options[:input_dir]))
       package
     end
 

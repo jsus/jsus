@@ -31,7 +31,7 @@ module Jsus
       Dir.chdir(directory) do
         files.each do |filename|
           source_file = SourceFile.from_file(filename, :namespace => name)
-
+          source_file.package = self
           if source_file
             if source_file.extension?
               extensions << source_file
@@ -81,7 +81,7 @@ module Jsus
     # @return [Array] an array of provided tags
     # @api public
     def provides
-      source_files.map {|s| s.provides }.flatten | linked_external_dependencies.map {|d| d.provides }.flatten
+      source_files.map {|s| s.provides }.flatten
     end
     alias_method :provisions, :provides
 
@@ -89,7 +89,6 @@ module Jsus
     # @api public
     def dependencies
       result = source_files.map {|source| source.dependencies }.flatten
-      result |= linked_external_dependencies.map {|d| d.dependencies}.flatten
       result -= provides
       result
     end
@@ -153,25 +152,18 @@ module Jsus
     end
 
 
-    # Container with source files
-    # @return [Jsus::Container]
-    # @api semipublic
-    def source_files
-      @source_files ||= Container.new
-    end
-
-    # Returns source files AND linked external dependencies joined in one array
+    # Array with source files
     # @return [Array]
     # @api semipublic
-    def source_files_for_compilation
-      source_files.to_a + linked_external_dependencies.to_a
-    end # source_files_for_compilation
+    def source_files
+      @source_files ||= []
+    end
 
-    # Container with extensions (they aren't compiled or included into #reqired_files list)
-    # @return [Jsus::Container]
+    # Array with extensions
+    # @return [Array]
     # @api semipublic
     def extensions
-      @extensions ||= Container.new
+      @extensions ||= []
     end
 
     # Private API
@@ -181,18 +173,6 @@ module Jsus
     # @api private
     def header=(new_header)
       @header = new_header
-    end
-
-    # @return [Array] linked external dependencies
-    # @api private
-    def linked_external_dependencies
-      @linked_external_dependencies ||= []
-    end # linked_external_dependencies
-
-    # @param [Enumerable] new_value external dependencies
-    # @api private
-    def linked_external_dependencies=(new_value)
-      @linked_external_dependencies = new_value
     end
   end
 end

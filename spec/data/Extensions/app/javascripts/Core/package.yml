@@ -6,3 +6,5 @@ copyright: Somebody
 authors: Someone
 sources:
   - Source/Class.js
+  - Source/Hash.js
+  - Source/Mash.js

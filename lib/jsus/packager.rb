@@ -31,7 +31,7 @@ module Jsus
     # @return [String] concatenated source files
     # @api public
     def pack(output_file = nil)
-      result = sources.map {|s| s.content }.join("\n")
+      result = sources.map {|s| s.source }.join("\n")
 
       if output_file
         FileUtils.mkdir_p(File.dirname(output_file))

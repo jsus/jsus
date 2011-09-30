@@ -11,6 +11,10 @@ module Jsus
     #
     # @param [*SourceFile] sources
     def initialize(*sources)
+      @sources        = []
+      @normal_sources = []
+      @extensions     = []
+      @replacements   = []
       sources.each do |source|
         push(source)
       end
@@ -26,7 +30,13 @@ module Jsus
         if source.kind_of?(Array) || source.kind_of?(Container)
           source.each {|s| self.push(s) }
         else
-          sources.push(source) unless sources.include?(source)
+          if source.extension?
+            @extensions << source unless @extensions.include?(source)
+          elsif source.replacement?
+            @replacements << source unless @replacements.include?(source)
+          else
+            @normal_sources << source unless @normal_sources.include?(source)
+          end
         end
       end
       clear_cache!
@@ -41,23 +51,15 @@ module Jsus
       map {|item| item.respond_to?(:flatten) ? item.flatten : item }.flatten
     end
 
-    # Contains the source files. Please, don't use sources directly, if you
-    # depend on them to be topologically sorted. Use collection methods like
-    # inject/reject/map directly on the container instead.
+    # Contains the source files.
     #
     # @return [Array]
     # @api semipublic
     def sources
-      @sources ||= []
+      sort!
+      @sources
     end
     alias_method :to_a, :sources
-
-    # Sets sources to new value.
-    #
-    # @api semipublic
-    def sources=(new_value) # :nodoc:
-      @sources = new_value
-    end
 
     # Topologically sorts items in container if required.
     #
@@ -65,8 +67,9 @@ module Jsus
     # @api semipublic
     def sort!
       unless sorted?
-        remove_replaced_files!
-        self.sources = topsort
+        @sources = topsort
+        insert_extensions!
+        insert_replacements!
         @sorted = true
       end
       self
@@ -114,7 +117,7 @@ module Jsus
     def topsort
       graph = RGL::DirectedAdjacencyGraph.new
       # init vertices
-      items = sources
+      items = @normal_sources
       items.each {|item| graph.add_vertex(item) }
       # init edges
       items.each do |item|
@@ -177,15 +180,13 @@ module Jsus
     def provides_tree!
       tree = Util::Tree.new
       # Provisions
-      sources.each do |file|
-        file.provides.each do |tag|
-          tree[tag] = file
+      @normal_sources.each do |file|
+        provisions = file.provides
+        if replacement = @replacements.detect {|r| provisions.any? {|tag| tag == r.replaces } }
+          file = replacement
         end
-      end
-      # Replacements
-      sources.each do |file|
-        if file.replaces
-          tree[file.replaces] = file
+        provisions.each do |tag|
+          tree[tag] = file
         end
       end
       tree
@@ -195,40 +196,39 @@ module Jsus
     #
     # @api private
     def remove_replaced_files!
-      sources.reject! do |sf|
-        !sf.provides.empty? && sf.provides.any? { |tag| replacements_tree[tag] && replacements_tree[tag] != sf }
-      end
+      # sources.reject! do |sf|
+      #   !sf.provides.empty? && sf.provides.any? { |tag| replacements_tree[tag] && replacements_tree[tag] != sf }
+      # end
     end
 
-    # Cached tree of what source files replace.
-    #
     # @api private
-    # @return [Jsus::Util::Tree]
-    def replacements_tree
-      @replacements_tree ||= replacements_tree!
-    end
-
-    # Returns tree of what source files replace.
-    #
-    # @api private
-    # @return [Jsus::Util::Tree]
-    def replacements_tree!
-      tree = Util::Tree.new
-      sources.each do |file|
-        if file.replaces
-          tree[file.replaces] = file
+    def insert_extensions!
+      @extensions.each do |ext|
+        ext_tag = ext.extends
+        @sources.each_with_index do |src, i|
+          if src.provides.any? {|tag| tag == ext_tag }
+            @sources.insert(i+1, ext)
+            break
+          end
         end
       end
-      tree
-    end
+    end # insert_extensions!
+
+    def insert_replacements!
+      @replacements.each do |repl|
+        @sources.each_with_index do |src, i|
+          if src.provides.any? {|tag| tag == repl.replaces }
+            @sources[i] = repl
+            break
+          end
+        end
+      end
+    end # insert_replacements!
 
     # Clears all caches for given container.
     #
     # @api private
     def clear_cache!
-      @provides_tree = nil
-      @replacements_tree = nil
-      @dependency_cache = nil
       @sorted = false
     end
 
@@ -246,9 +246,8 @@ module Jsus
     ]
 
     (DELEGATED_METHODS).each do |m|
-      class_eval <<-EVAL
+      class_eval(<<-EVAL, __FILE__, __LINE__ + 1)
         def #{m}(*args, &block)
-          sort!
           #{"clear_cache!" if CACHE_CLEAR_METHODS.include?(m)}
           self.sources.send(:#{m}, *args, &block)
         end
