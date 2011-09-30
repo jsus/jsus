@@ -104,7 +104,7 @@ EOF
     end
 
     def compile_package(sources)
-      result = Packager.new(*sources.to_a).pack(nil)
+      result = Packager.new(sources).pack(nil)
       checkpoint(:compilation)
       result
     end

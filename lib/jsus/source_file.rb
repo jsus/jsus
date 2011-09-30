@@ -24,7 +24,7 @@ module Jsus
     attr_reader :original_source
 
     # Source code (mutable)
-    attr_reader :source
+    attr_accessor :source
 
     # Default namespace for source
     attr_reader :namespace

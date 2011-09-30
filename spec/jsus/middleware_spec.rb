@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'sinatra/base'
 require 'rack/test'
 
-describe Jsus::Middleware do
+describe Jsus::Middleware, :ignore => true do
   include Rack::Test::Methods
   def new_server
     Sinatra.new do

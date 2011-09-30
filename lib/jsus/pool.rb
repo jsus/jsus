@@ -57,7 +57,7 @@ module Jsus
         when String
           lookup(Tag[source_or_key])
         when Tag
-          replacement_map[source_or_key] || provides_map[source_or_key]
+          provides_map[source_or_key]
         when SourceFile
           source_or_key
         else
@@ -75,7 +75,7 @@ module Jsus
     # @api public
     def lookup_dependencies(source_or_source_key)
       source = lookup(source_or_source_key)
-      result = Container.new
+      result = []
       looked_up = []
       if source
         dependencies = lookup_direct_dependencies(source)
@@ -84,7 +84,7 @@ module Jsus
           dependencies = dependencies.map {|d| lookup_direct_dependencies(d).to_a }.flatten.uniq
         end
       end
-      result.sort!
+      result
     end
 
     # Returns replacement for given source file.
@@ -92,7 +92,7 @@ module Jsus
     # @return [Jsus::SourceFile, nil]
     # @api public
     def lookup_replacement(source)
-      source.provides.detect {|tag| replacement_map[tag] }
+      source.provides.map {|tag| replacement_map[tag] }.compact[0]
     end # lookup_replacement
 
     # @param [Jsus::SourceFile]
@@ -126,7 +126,7 @@ module Jsus
             provides_map[p] = source
           end
 
-          replacement_map[source.replaces] = source if source.replaces if source.replaces
+          replacement_map[source.replaces] = source if source.replaces
         end
       when source_or_sources_or_package.kind_of?(Package)
         package = source_or_sources_or_package
@@ -147,11 +147,15 @@ module Jsus
       result = []
       package.source_files.each do |source|
         result << source
-        result << lookup_replacement(source)
-        result << lookup_dependencies(source)
-        result << lookup_extensions(source)
+        result << lookup_dependencies(source) unless source.extension? || source.replacement?
       end
-      result = result.flatten
+      result = result.flatten.compact
+      extra_files = []
+      result.each_with_index do |source, i|
+        extra_files << lookup_replacement(source)
+        extra_files << lookup_extensions(source)
+      end
+      result = (result + extra_files).flatten.compact
       Container.new(result)
     end # compile_package
 

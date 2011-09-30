@@ -70,6 +70,7 @@ module Jsus
         @sources = topsort
         insert_extensions!
         insert_replacements!
+        @sources.uniq!
         @sorted = true
       end
       self
@@ -205,7 +206,7 @@ module Jsus
     def insert_extensions!
       @extensions.each do |ext|
         ext_tag = ext.extends
-        @sources.each_with_index do |src, i|
+        @sources.dup.each_with_index do |src, i|
           if src.provides.any? {|tag| tag == ext_tag }
             @sources.insert(i+1, ext)
             break

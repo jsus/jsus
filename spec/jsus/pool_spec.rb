@@ -69,13 +69,6 @@ describe Jsus::Pool do
     it "should allow tags" do
       subject.lookup(Jsus::Tag["Class/Class"]).should == sources[1]
     end
-
-    it "should return replacements whenever possible" do
-      pkg = Jsus::Package.new("spec/data/ClassReplacement")
-      subject << pkg
-      subject.lookup("Class/Class").should == pkg.source_files[0]
-      subject.lookup(Jsus::Tag["Class/Class"]).should == pkg.source_files[0]
-    end
   end
 
   describe "#lookup_direct_dependencies" do
@@ -102,8 +95,8 @@ describe Jsus::Pool do
     end
 
     it "should return a container with files and dependencies" do
-      subject.lookup_dependencies("Mash/Mash").should == [sources[1], sources[2]]
-      subject.lookup_dependencies(Jsus::Tag["Mash/Mash"]).should == [sources[1], sources[2]]
+      subject.lookup_dependencies("Mash/Mash").should =~ [sources[1], sources[2]]
+      subject.lookup_dependencies(Jsus::Tag["Mash/Mash"]).should =~ [sources[1], sources[2]]
     end
 
     it "should return empty array if pool doesn't contain given source" do
@@ -115,7 +108,7 @@ describe Jsus::Pool do
       let(:input_dir) { "spec/data/DependenciesWildcards/app/javascripts" }
 
       it "should support wildcards" do
-        subject.lookup_dependencies("Mash/Mash").should == [sources[1], sources[2]]
+        subject.lookup_dependencies("Mash/Mash").should =~ [sources[1], sources[2]]
       end
     end
   end
