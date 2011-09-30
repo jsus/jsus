@@ -10,7 +10,7 @@ license: Public Domain, http://unlicense.org/UNLICENSE
 authors:
   - Mark Abramov
 
-requires: 
+requires:
   - Mootools/Core
 
 provides: [Core]

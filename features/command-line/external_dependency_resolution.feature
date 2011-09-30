@@ -49,7 +49,6 @@ Feature: external dependencies
       """
     And file "tmp/package.js" should have "script: Core.js" before "script: Color.js"
 
-  @wip
   Scenario: external dependency with external dependency
     When I run "jsus ExternalDependencyWithExternalDependency tmp -d ExternalDependencyWithExternalDependency"
     Then the following files should exist:

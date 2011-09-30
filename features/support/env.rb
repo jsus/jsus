@@ -5,5 +5,5 @@ JSUS_CLI_PATH = ROOT + "/bin/jsus"
 require 'rspec/expectations'
 require 'fileutils'
 After do
-  FileUtils.rm_rf(TMP_DIR)
+  # FileUtils.rm_rf(TMP_DIR)
 end
