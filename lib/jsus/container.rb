@@ -27,8 +27,10 @@ module Jsus
     # @param [SourceFile] source source pushed file
     def push(source)
       if source
-        if source.kind_of?(Array) || source.kind_of?(Container)
+        if source.kind_of?(Array)
           source.each {|s| self.push(s) }
+        elsif source.kind_of?(Container)
+          source.all_sources.each {|s| self.push(s) }
         else
           if source.extension?
             @extensions << source unless @extensions.include?(source)
@@ -54,12 +56,21 @@ module Jsus
     # Contains the source files.
     #
     # @return [Array]
-    # @api semipublic
+    # @api public
     def sources
       sort!
       @sources
     end
     alias_method :to_a, :sources
+
+    # Includes all sources, even those that would normally be replaced.
+    # Without any order.
+    #
+    # @return [Array]
+    # @api semipublic
+    def all_sources
+      @normal_sources + @extensions + @replacements
+    end # all_sources
 
     # Topologically sorts items in container if required.
     #

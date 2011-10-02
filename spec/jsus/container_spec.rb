@@ -14,6 +14,12 @@ describe Jsus::Container do
       simple_container.should have_exactly(2).sources
       simple_container.sources.should include(simple_source, another_simple_source)
     end
+
+    it "should not lose data when initialized from another container" do
+      container = Jsus::Container.new(simple_source, replacement_source, another_simple_source)
+      container.to_a.should =~ [simple_source, replacement_source]
+      Jsus::Container.new(container).to_a.should =~ [simple_source, replacement_source]
+    end
   end
 
   describe "#<<" do
