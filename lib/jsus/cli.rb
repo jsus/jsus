@@ -61,7 +61,6 @@ module Jsus
       output_benchmarks
     rescue Exception => e
       $stderr.puts "Exception was raised: #{e.inspect}\n\nBacktrace: #{e.backtrace.join("\n")}"
-      output_benchmarks
     end
 
     def preload_pool
