@@ -10,8 +10,9 @@ module Jsus
 
         if options[:watch]
           input_dirs = [ options[:input_dir], options[:deps_dir] ].compact
+          output_dir = options[:output_dir]
           Jsus.logger.info "Jsus enters watch mode, it will watch your files for changes and relaunch itself"
-          Jsus::Util::Watcher.watch(input_dirs) do |filename|
+          Jsus::Util::Watcher.watch(input_dirs, output_dir) do |filename|
             Jsus.logger.info "#{filename} changed, recompiling..."
             new.launch
             Jsus.logger.info "... done"

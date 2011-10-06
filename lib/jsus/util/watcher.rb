@@ -3,13 +3,14 @@ class Jsus::Util::Watcher
     # Watches input directories and their subdirectories for changes in
     # js source files and package metadata files.
     # @param [String, Array] input_dirs directory or directories to watch
+    # @param [String, Array] ignored_dirs directory or directories to ignore
     # @yield [filename] Callback to trigger on creation / update / removal of
     #        any file in given directories
     # @yieldparam [String] filename Updated filename full path
     # @return [FSSM::Monitor] fssm monitor instance
     # @api public
-    def watch(input_dirs, &callback)
-      new(input_dirs, &callback)
+    def watch(input_dirs, ignored_dirs = [], &callback)
+      new(input_dirs, ignored_dirs, &callback)
     end
   end
 
@@ -17,12 +18,13 @@ class Jsus::Util::Watcher
   # Jsus::Util::Watcher.watch instead.
   # @see .watch
   # @api semipublic
-  def initialize(input_dirs, &callback)
+  def initialize(input_dirs, ignored_dirs = [], &callback)
     require 'fssm'
     @callback = callback
     input_dirs = Array(input_dirs).compact
     @semaphore = Mutex.new
     watcher = self
+    @ignored_dirs = Array(ignored_dirs).map {|dir| File.expand_path(dir) }
     FSSM.monitor do
       input_dirs.each do |dir|
         dir = File.expand_path(dir)
@@ -49,9 +51,9 @@ class Jsus::Util::Watcher
   # @api semipublic
   def watch_callback(base, match)
     Thread.new do
-      run do
-        full_path = File.join(base, match)
-        @callback.call(full_path)
+      full_path = File.join(base, match)
+      unless @ignored_dirs.any? {|dir| full_path.index(dir) == 0 }
+        run { @callback.call(full_path) }
       end
     end
   end # watch_callback
