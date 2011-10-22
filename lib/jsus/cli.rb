@@ -96,9 +96,9 @@ EOF
     def display_package(package)
       result = "Package: #{package.name}\n"
       package.source_files.to_a.sort_by {|sf| sf.filename}.each do |sf|
-        result << "    [#{sf.relative_filename}]\n"
-        result << "        Provides: [#{sf.provides_names.join(", ")}]\n"
-        result << "        Requires: [#{sf.requires_names.join(", ")}]\n"
+        result << "    [#{sf.filename}]\n"
+        result << "        Provides: [#{sf.provides.map {|tag| tag.full_name }.join(", ")}]\n"
+        result << "        Requires: [#{sf.requires.map {|tag| tag.full_name }.join(", ")}]\n"
       end
       result << "\n"
     end
