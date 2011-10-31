@@ -137,6 +137,7 @@ module Jsus
       replaces && !replaces.empty?
     end # replacement?
 
+    # @api private
     def reset
       @source   = @original_source.dup
       @filename = @original_filename.dup if @original_filename

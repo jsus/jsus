@@ -129,6 +129,10 @@ module Jsus
       sources.map {|s| s.provides }.flatten
     end # provides
 
+    # Returns all the tags required by source files, except for those which are
+    # provided by other files in the container (i.e. unresolved dependencies)
+    # @return [Array]
+    # @api public
     def requires
       sort!
       sources.map {|s| s.requires }.flatten - provides
@@ -217,15 +221,6 @@ module Jsus
       tree
     end
 
-    # Removes files which are marked as replaced by other sources.
-    #
-    # @api private
-    def remove_replaced_files!
-      # sources.reject! do |sf|
-      #   !sf.provides.empty? && sf.provides.any? { |tag| replacements_tree[tag] && replacements_tree[tag] != sf }
-      # end
-    end
-
     # @api private
     def insert_extensions!
       @extensions.each do |ext|
@@ -239,6 +234,7 @@ module Jsus
       end
     end # insert_extensions!
 
+    # @api private
     def insert_replacements!
       @replacements.each do |repl|
         @sources.each_with_index do |src, i|
