@@ -28,8 +28,8 @@ module Jsus
     end
 
     def setup_output_directory
-      output_dir = Pathname.new(options[:output_dir])
-      output_dir.mkpath
+      output_dir = File.expand_path(options[:output_dir])
+      FileUtils.mkdir_p(output_dir)
       output_dir
     end
 
@@ -44,15 +44,15 @@ module Jsus
       @resulting_sources = @resulting_sources_container = @pool.compile_package(@package)
       @resulting_sources = post_process(@resulting_sources, options[:postproc]) if options[:postproc]
       @package_content = compile_package(@resulting_sources)
-      package_filename = @output_dir + @package.filename
+      package_filename = File.join(@output_dir, @package.filename)
 
       if options[:compress]
-        File.open(package_filename.to_s.chomp(".js") + ".min.js", 'w') do |f|
+        File.open(package_filename.chomp(".js") + ".min.js", 'w') do |f|
           f.write compress_package(@package_content)
         end
       end
 
-      package_filename.open('w') {|f| f << @package_content  }
+      File.open(package_filename, 'w') {|f| f << @package_content  }
 
       generate_supplemental_files
       validate_sources
