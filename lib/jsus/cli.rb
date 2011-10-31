@@ -41,10 +41,9 @@ module Jsus
       @pool       << @package
       display_pool_stats(@pool) if options[:display_pool_stats]
 
-      @resulting_sources = @pool.compile_package(@package)
+      @resulting_sources = @resulting_sources_container = @pool.compile_package(@package)
       @resulting_sources = post_process(@resulting_sources, options[:postproc]) if options[:postproc]
       @package_content = compile_package(@resulting_sources)
-
       package_filename = @output_dir + @package.filename
 
       if options[:compress]
@@ -55,7 +54,7 @@ module Jsus
 
       package_filename.open('w') {|f| f << @package_content  }
 
-      # generate_supplemental_files
+      generate_supplemental_files
       validate_sources
       generate_includes if options[:generate_includes]
       generate_docs if options[:documented_classes] && !options[:documented_classes].empty?
@@ -132,8 +131,16 @@ EOF
     end
 
     def generate_supplemental_files
-      @package.generate_scripts_info(@output_dir) unless options[:without_scripts_info]
-      @package.generate_tree(@output_dir) unless options[:without_tree_info]
+      File.open(options[:output_dir] + "/scripts.json", "w+") do |f|
+        scripts_hash = {
+          @package.name => {
+            :desc     => @package.description,
+            :provides => @resulting_sources_container.provides.map {|tag| tag.to_s},
+            :requires => @resulting_sources_container.requires.map {|tag| tag.to_s}
+          }
+        }
+        f.puts JSON.pretty_generate(scripts_hash)
+      end
       checkpoint(:supplemental_files)
     end
 

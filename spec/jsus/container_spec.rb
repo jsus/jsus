@@ -121,4 +121,30 @@ describe Jsus::Container do
       subject.sources.should == [replacement]
     end
   end
+
+  describe "#provides" do
+    let(:source) { Jsus::SourceFile.from_file("features/data/Basic/Source/Library/Color.js", :namespace => "Base") }
+    let(:another_source) { Jsus::SourceFile.from_file("features/data/Basic/Source/Widget/Input/Input.Color.js", :namespace => "Base") }
+    subject { described_class.new(source, another_source) }
+
+    it "should include provided tags of all sources" do
+      subject.provides.map {|tag| tag.to_s}.should =~ ["Base/Color", "Base/Input.Color"]
+    end
+  end
+
+  describe "#requires" do
+    let(:source) { Jsus::SourceFile.from_file("features/data/Basic/Source/Library/Color.js", :namespace => "Base") }
+    let(:another_source) { Jsus::SourceFile.from_file("features/data/Basic/Source/Widget/Input/Input.Color.js", :namespace => "Base") }
+    subject { described_class.new(another_source) }
+
+    it "should include required tags of all sources" do
+      subject.provides.map {|tag| tag.to_s}.should =~ ["Base/Input.Color"]
+      subject.requires.map {|tag| tag.to_s}.should =~ ["Base/Color"]
+    end
+
+    it "should exclude tags which are provided by other files" do
+      subject << source
+      subject.requires.map {|tag| tag.to_s}.should == []
+    end
+  end
 end

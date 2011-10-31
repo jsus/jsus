@@ -95,42 +95,6 @@ module Jsus
     alias_method :requires, :dependencies
     alias_method :requirements, :dependencies
 
-    # Generates tree structure for files in package into a json file.
-    # @param [String] directory directory to output the result
-    # @param [String] filename resulting filename
-    # @return [Hash] hash with tree structure
-    # @api public
-    def generate_tree(directory = ".", filename = "tree.json")
-      FileUtils.mkdir_p(directory)
-      result = ActiveSupport::OrderedHash.new
-      directory_components = self.directory.split(File::SEPARATOR)
-      source_files.each do |source|
-        components = File.dirname(source.filename).split(File::SEPARATOR)
-        components -= directory_components
-        # deleting source dir by convention
-        components.delete("Source")
-        node = result
-        components.each do |component|
-          node[component] ||= ActiveSupport::OrderedHash.new
-          node = node[component]
-        end
-        node[File.basename(source.filename, ".js")] = source.to_hash
-      end
-      File.open(File.join(directory, filename), "w") { |resulting_file| resulting_file << JSON.pretty_generate(result) }
-      result
-    end
-
-    # Generates info about resulting compiled package into a json file.
-    # @param [String] directory directory to output the result
-    # @param [String] filename resulting filename
-    # @return [Hash] hash with scripts info
-    # @api public
-    def generate_scripts_info(directory = ".", filename = "scripts.json")
-      FileUtils.mkdir_p directory
-      File.open(File.join(directory, filename), "w") { |resulting_file| resulting_file << JSON.pretty_generate(self.to_hash) }
-      self.to_hash
-    end
-
     # Lists the required files for the package.
     # @return [Array] ordered list of full paths to required files.
     # @api public

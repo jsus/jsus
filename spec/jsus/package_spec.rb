@@ -50,39 +50,6 @@ describe Jsus::Package do
     end
   end
 
-  describe "#generate_scripts_info" do
-    it "should create scripts.json file containing all the info about the package" do
-      subject.generate_scripts_info(output_dir)
-      File.exists?("#{output_dir}/scripts.json").should be_true
-      info = JSON.parse(IO.read("#{output_dir}/scripts.json"))
-      info = info["Orwik"]
-      info["provides"].should have_exactly(4).items
-      info["provides"].should include("Color", "Widget", "Input", "Input.Color")
-    end
-  end
-
-  describe "#generate_tree" do
-    it "should create a json file containing tree information and dependencies" do
-      subject.generate_tree(output_dir)
-      File.exists?("#{output_dir}/tree.json").should be_true
-      tree = JSON.parse(IO.read("#{output_dir}/tree.json"))
-      tree["Library"]["Color"]["provides"].should == ["Color"]
-      tree["Widget"]["Widget"]["provides"].should == ["Widget"]
-      tree["Widget"]["Input"]["Input"]["requires"].should == ["Widget"]
-      tree["Widget"]["Input"]["Input"]["provides"].should == ["Input"]
-      tree["Widget"]["Input"]["Input.Color"]["requires"].should have_exactly(2).elements
-      tree["Widget"]["Input"]["Input.Color"]["requires"].should include("Input", "Color")
-      tree["Widget"]["Input"]["Input.Color"]["provides"].should == ["Input.Color"]
-    end
-
-    it "should allow different filenames" do
-      subject.generate_tree(output_dir, "structure.json")
-      File.exists?("#{output_dir}/structure.json").should be_true
-      tree = JSON.parse(IO.read("#{output_dir}/structure.json"))
-      tree["Library"]["Color"]["provides"].should == ["Color"]
-    end
-  end
-
   describe "#required_files" do
     it "should not include extensions" do
       required_files = Jsus::Package.new("spec/data/Extensions/app/javascripts/Orwik").required_files

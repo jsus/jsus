@@ -121,6 +121,19 @@ module Jsus
       "#<#{self.class.name}:#{self.object_id} #{self.sources.inspect}>"
     end
 
+    # Returns all the tags provided by source files.
+    # @return [Array]
+    # @api public
+    def provides
+      sort!
+      sources.map {|s| s.provides }.flatten
+    end # provides
+
+    def requires
+      sort!
+      sources.map {|s| s.requires }.flatten - provides
+    end # requires
+
     # Private API
 
     # Performs topological sort inside current container.
