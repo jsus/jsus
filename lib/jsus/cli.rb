@@ -131,15 +131,17 @@ EOF
     end
 
     def generate_supplemental_files
-      File.open(options[:output_dir] + "/scripts.json", "w+") do |f|
-        scripts_hash = {
-          @package.name => {
-            :desc     => @package.description,
-            :provides => @resulting_sources_container.provides.map {|tag| tag.to_s},
-            :requires => @resulting_sources_container.requires.map {|tag| tag.to_s}
+      unless options[:without_scripts_info]
+        File.open(options[:output_dir] + "/scripts.json", "w+") do |f|
+          scripts_hash = {
+            @package.name => {
+              :desc     => @package.description,
+              :provides => @resulting_sources_container.provides.map {|tag| tag.to_s},
+              :requires => @resulting_sources_container.requires.map {|tag| tag.to_s}
+            }
           }
-        }
-        f.puts JSON.pretty_generate(scripts_hash)
+          f.puts JSON.pretty_generate(scripts_hash)
+        end
       end
       checkpoint(:supplemental_files)
     end
