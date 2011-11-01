@@ -23,7 +23,7 @@ module Jsus
       @header = if File.exists?(File.join(directory, 'package.yml'))
         YAML.load_file(File.join(directory, 'package.yml'))
       elsif File.exists?(File.join(directory, 'package.json'))
-        JSON.load(File.open(File.join(directory, 'package.json'), 'r:utf-8') {|f| f.read })
+        JSON.load(Jsus::Util.read_file(File.join(directory, 'package.json')))
       else
         Jsus.logger.fatal "Directory #{directory} does not contain a valid package.yml / package.json file!"
         raise "Directory #{directory} does not contain a valid package.yml / package.json file!"

@@ -20,8 +20,8 @@ group :development do
     gem "ruby-debug19", :platforms => :ruby_19
 
     # FIXME: linecache being ruby1.9+only
-    gem "linecache", "= 0.45", :platforms => :ruby_18
-    gem "ruby-debug",   :platforms => :ruby_18
+    gem "linecache", "= 0.45", :platforms => :mri_18
+    gem "ruby-debug",   :platforms => :mri_18
   end
 
   gem 'fssm'

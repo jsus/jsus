@@ -30,6 +30,14 @@ module Jsus
           false
         end
       end
+
+      # Reads file in UTF-8 encoding in a safe way.
+      # Some ruby versions mess up the encodings and some spill out lots of warnings
+      # unless you do the right thing
+      def read_file(filename)
+        mode_string = RUBY_VERSION =~ /^1.9/ ? 'r:utf-8' : 'r'
+        File.open(filename, mode_string) {|f| f.read }
+      end # read_file
     end # class <<self
   end # Util
 end # Jsus

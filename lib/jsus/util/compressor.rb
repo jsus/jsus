@@ -56,7 +56,7 @@ module Jsus
 
         # @api private
         def try_compress(source, library, libname = nil)
-          if Jsus::Util.try_load(library, libname) then
+          if Jsus::Util.try_load(library, libname)
             yield
           else
             source

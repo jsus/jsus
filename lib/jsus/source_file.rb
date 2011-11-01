@@ -60,7 +60,7 @@ module Jsus
     def self.from_file(filename, options = {})
       filename = File.expand_path(filename)
       raise BadSourceFileException, "File does not exist." unless File.exists?(filename)
-      source = File.open(filename, 'r:utf-8') {|f| f.read }
+      source = Jsus::Util.read_file(filename)
       source_file = new(source, options)
       source_file.filename = source_file.original_filename = filename
       source_file.original_filename.freeze

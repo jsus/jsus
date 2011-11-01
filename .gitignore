@@ -8,3 +8,4 @@ features/data/tmp
 rdoc/*
 Gemfile.lock
 tmp/*
+.rbx/
