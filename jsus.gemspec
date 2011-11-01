@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{jsus}
-  s.version = "0.3.6"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Abramov"]
-  s.date = %q{2011-09-18}
+  s.date = %q{2011-11-01}
   s.default_executable = %q{jsus}
   s.description = %q{Javascript packager and dependency resolver}
   s.email = %q{markizko@gmail.com}
@@ -38,6 +38,7 @@ Gem::Specification.new do |s|
     "features/command-line/compression.feature",
     "features/command-line/extensions.feature",
     "features/command-line/external_dependency_resolution.feature",
+    "features/command-line/generate_includes.feature",
     "features/command-line/json_package.feature",
     "features/command-line/mooforge_compatibility_layer.feature",
     "features/command-line/postproc.feature",
@@ -88,16 +89,12 @@ Gem::Specification.new do |s|
     "features/data/Replacements/Source/Library/Color.js",
     "features/data/Replacements/package.yml",
     "features/data/compression.min.js",
-    "features/data/tmp2/package.js",
-    "features/data/tmp2/scripts.json",
-    "features/data/tmp2/tree.json",
     "features/step_definitions/cli_steps.rb",
     "features/support/env.rb",
     "jsus.gemspec",
     "lib/extensions/rgl.rb",
     "lib/jsus.rb",
     "lib/jsus/cli.rb",
-    "lib/jsus/compiler.rb",
     "lib/jsus/container.rb",
     "lib/jsus/middleware.rb",
     "lib/jsus/package.rb",
@@ -112,6 +109,13 @@ Gem::Specification.new do |s|
     "lib/jsus/util/file_cache.rb",
     "lib/jsus/util/inflection.rb",
     "lib/jsus/util/logger.rb",
+    "lib/jsus/util/mixins.rb",
+    "lib/jsus/util/mixins/operates_on_sources.rb",
+    "lib/jsus/util/post_processor.rb",
+    "lib/jsus/util/post_processor/base.rb",
+    "lib/jsus/util/post_processor/moocompat12.rb",
+    "lib/jsus/util/post_processor/mooltie8.rb",
+    "lib/jsus/util/post_processor/semicolon.rb",
     "lib/jsus/util/tree.rb",
     "lib/jsus/util/validator.rb",
     "lib/jsus/util/validator/base.rb",
@@ -151,8 +155,11 @@ Gem::Specification.new do |s|
     "spec/data/DependenciesWildcards/app/javascripts/Mash/Source/Mash.js",
     "spec/data/DependenciesWildcards/app/javascripts/Mash/package.yml",
     "spec/data/Extensions/app/javascripts/Core/Source/Class.js",
+    "spec/data/Extensions/app/javascripts/Core/Source/Hash.js",
+    "spec/data/Extensions/app/javascripts/Core/Source/Mash.js",
     "spec/data/Extensions/app/javascripts/Core/package.yml",
     "spec/data/Extensions/app/javascripts/Orwik/Extensions/Class.js",
+    "spec/data/Extensions/app/javascripts/Orwik/Extensions/Mash.js",
     "spec/data/Extensions/app/javascripts/Orwik/package.yml",
     "spec/data/ExternalDependencies/app/javascripts/Orwik/Source/Test.js",
     "spec/data/ExternalDependencies/app/javascripts/Orwik/package.yml",
@@ -193,9 +200,16 @@ Gem::Specification.new do |s|
     "spec/data/OutsideDependencies/app/javascripts/Orwik/Source/Widget/Input/Input.js",
     "spec/data/OutsideDependencies/app/javascripts/Orwik/Source/Widget/Widget.js",
     "spec/data/OutsideDependencies/app/javascripts/Orwik/package.yml",
+    "spec/data/SimpleSources/dependent_source_one.js",
+    "spec/data/SimpleSources/replacement_source_one.js",
+    "spec/data/SimpleSources/simple_source_one.js",
+    "spec/data/SimpleSources/simple_source_two.js",
     "spec/data/bad_test_source_one.js",
     "spec/data/bad_test_source_two.js",
+    "spec/data/extension_1.js",
+    "spec/data/extension_2.js",
     "spec/data/mooforge_quirky_source.js",
+    "spec/data/replacement.js",
     "spec/data/test_source_one.js",
     "spec/data/unicode_source.js",
     "spec/data/unicode_source_with_bom.js",
@@ -212,12 +226,16 @@ Gem::Specification.new do |s|
     "spec/jsus/util/file_cache_spec.rb",
     "spec/jsus/util/inflection_spec.rb",
     "spec/jsus/util/logger_spec.rb",
+    "spec/jsus/util/post_processor/moocompat12_spec.rb",
+    "spec/jsus/util/post_processor/mooltie8_spec.rb",
+    "spec/jsus/util/post_processor/semicolon_spec.rb",
+    "spec/jsus/util/post_processors/base_spec.rb",
     "spec/jsus/util/tree_spec.rb",
     "spec/jsus/util/validator/base_spec.rb",
     "spec/jsus/util/validator/mooforge_spec.rb",
     "spec/jsus/util/watcher_spec.rb",
     "spec/jsus/util_spec.rb",
-    "spec/shared/class_stubs.rb",
+    "spec/shared/mixins_segs.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/jsus/jsus}
