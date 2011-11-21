@@ -12,19 +12,25 @@ module Jsus
     #
     # Basic constructor.
     #
-    # @param [Array, String, nil] dir_or_dirs directory or list of directories to load source
-    #   packages from.
+    # @param [Array, String, nil] dir_or_dirs directory or list of directories
+    #   to load source packages from.
+    # @param [Boolean] deep_recurse whether to recurse deeper than one level
+    #   into project dirs
     # @api public
-    def initialize(dir_or_dirs = nil)
+    def initialize(dir_or_dirs = nil, deep_recurse = true)
       if dir_or_dirs
-        directories = Array(dir_or_dirs)
-        directories.each do |dir|
-          # '**{,/*/**}' thingie is to resolve problem with not following symlinks
-          # one level of symlinks
-          # See also: http://stackoverflow.com/questions/357754/can-i-traverse-symlinked-directories-in-ruby-with-a-glob
-          Dir[File.join(dir, '**{,/*/**}', 'package.{yml,json}')].uniq.each do |package_path|
-            self << Package.new(File.dirname(package_path))
+        directories = Array(dir_or_dirs).map {|d| File.expand_path(d) }
+        traverser   = lambda do |path|
+          children = path.children
+          continue_deeper = true
+          if children.detect {|c| c.basename.to_s =~ /package\.(json|yml)/ }
+            self << Package.new(path.to_s)
+            continue_deeper = deep_recurse
           end
+          children.select {|c| c.directory? }.each(&traverser) if continue_deeper
+        end
+        directories.each do |dir|
+          traverser.call(Pathname(dir))
         end
       end
       flush_cache!

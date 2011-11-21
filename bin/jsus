@@ -50,6 +50,10 @@ cli = OptionParser.new do |opts|
     end
   end
 
+  opts.on('--no-deep-recurse', "when set, dependency lookup won't recurse further than one package directory deep") do
+    options[:no_deep_recurse] = true
+  end
+
   opts.on('--no-syntax-highlight', 'if you turned on docs generation, it will use syntax highlighting by default. This option prevents it') do
     options[:no_syntax_highlight] = true
   end

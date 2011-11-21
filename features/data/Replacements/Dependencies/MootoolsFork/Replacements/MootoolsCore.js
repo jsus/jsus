@@ -10,7 +10,7 @@ license: MIT-style license
 authors:
 - Mark Abramov
 
-provides: 
+provides:
   - More
 
 replaces: Mootools/Core

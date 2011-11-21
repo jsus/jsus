@@ -1,0 +1,14 @@
+{
+  "raptor": {
+    "desc": "Raptor widgets",
+    "provides": [
+      "Raptor/Widget",
+      "Raptor/Input",
+      "Raptor/Color",
+      "Raptor/Input.Color"
+    ],
+    "requires": [
+
+    ]
+  }
+}

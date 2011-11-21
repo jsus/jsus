@@ -51,6 +51,26 @@ describe Jsus::Pool do
         pool = Jsus::Pool.new(["spec/data/JsonPackage", "spec/data/Basic"])
         pool.should have_exactly(2).packages
       end
+
+      context "when deep_recurse flag is set to false" do
+        let(:input_dir) { "spec/data/RecursivePackage" }
+        subject { Jsus::Pool.new(input_dir, false) }
+
+        it "should not add packages deep inside of other package subfolders" do
+          subject.should have_exactly(1).packages
+          subject.packages[0].name.should == "raptor"
+        end
+      end
+
+      context "when deep_recurse flag is set to true" do
+        let(:input_dir) { "spec/data/RecursivePackage" }
+        subject { Jsus::Pool.new(input_dir, true) }
+
+        it "should add packages deep inside of other package subfolders" do
+          subject.should have_exactly(2).packages
+          subject.packages.map(&:name).should =~ ["raptor", "velociraptor"]
+        end
+      end
     end
   end
 

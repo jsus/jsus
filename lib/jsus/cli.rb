@@ -65,7 +65,7 @@ module Jsus
 
     def preload_pool
       result = if options[:deps_dir]
-        Jsus::Pool.new(options[:deps_dir])
+        Jsus::Pool.new(options[:deps_dir], !options[:no_deep_recurse])
       else
         Jsus::Pool.new
       end

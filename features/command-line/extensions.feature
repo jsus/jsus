@@ -1,9 +1,9 @@
 Feature: extensions
   In order to monkeypatch other libraries, I should be able to cook some
   extensions.
-  
+
   Scenario: monkeypatch for external dependency
-    When I run "jsus Extensions tmp -d Extensions/Mootools"
+    When I run "jsus Extensions tmp -d Extensions/Mootools --no-deep-recurse"
     Then the following files should exist:
       | tmp/package.js |
     And file "tmp/package.js" should contain
@@ -66,5 +66,5 @@ Feature: extensions
       ...
       */
       """
-    And file "tmp/package.js" should have "MootooolsCore.js" after "script: Core.js"  
+    And file "tmp/package.js" should have "MootooolsCore.js" after "script: Core.js"
     And file "tmp/package.js" should have "MootooolsCore.js" before "script: Color.js"

@@ -1,0 +1,12 @@
+name: velociraptor
+filename: velociraptor.js
+web: http://github.com
+description: Velociraptor widgets
+license: MIT-Style License, http://mootools.net/license
+copyright:
+authors: JC, http://raptor.jsus.com
+sources:
+  - "Source/Widget/Widget.js"
+  - "Source/Widget/Input/Input.js"
+  - "Source/Widget/Input/Input.Color.js" #Files are unsorted. Figure out the order please
+  - "Source/Library/Color.js"
