@@ -33,16 +33,6 @@ options = {}
 cli = OptionParser.new do |opts|
   opts.banner = "jsus #{Jsus.version}. Usage: jsus [options] <input_dir> <output_dir>"
 
-  opts.on('-i', '--input-directory [DIR]', '[DEPRECATED] path to input directory ') do |dir|
-    Jsus.logger.warn "DEPRECATION NOTICE: please do not use -i command-line argument"
-    options[:input_dir] = dir
-  end
-
-  opts.on('-o', '--output-directory [DIR]', '[DEPRECATED] path to output directory ') do |dir|
-    Jsus.logger.warn "DEPRECATION NOTICE: please do not use -o command-line argument"
-    options[:output_dir] = dir
-  end
-
   opts.on('-d', '--with-dependencies [DEPS]', 'path to directory containing dependency packages')  do |dir|
     options[:deps_dir] = dir
   end
