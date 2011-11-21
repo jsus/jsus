@@ -20,7 +20,7 @@ end
 require 'jsus'
 require "optparse"
 
-Jsus.logger = Jsus::Util::Logger.new(STDOUT)
+Jsus.logger = Jsus::Util::Logger.new($stderr)
 Jsus.logger.formatter = lambda {|severity, time, progname, msg|
   prefix = case severity
   when /error/i, /fatal/i, /warn/i then "[#{severity}]: "
@@ -87,8 +87,8 @@ cli = OptionParser.new do |opts|
     options[:benchmark] = true
   end
 
-  opts.on_tail('--without-scripts-info', 'do not generate scripts.json') do
-    options[:without_scripts_info] = true
+  opts.on_tail('--generate-scripts-info', 'generate scripts.json') do
+    options[:generate_scripts_info] = true
   end
 
   opts.on_tail('--watch', 'watch file system events for *.js files in subdirectories and rerun jsus with the same parameters') do
@@ -102,10 +102,15 @@ cli = OptionParser.new do |opts|
 end
 cli.parse!
 
-options[:input_dir]  ||= ARGV[0]
-options[:output_dir] ||= ARGV[1]
+options[:input_dir]  = ARGV[0]
+if ARGV[1]
+  options[:output_dir] = ARGV[1]
+else
+  options[:output_dir] = "/tmp/jsus"
+  options[:output_to_stdout] = true
+end
 
-unless options[:input_dir] && options[:output_dir]
+unless options[:input_dir]
   puts cli
   exit
 end

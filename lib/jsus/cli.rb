@@ -44,15 +44,22 @@ module Jsus
       @resulting_sources = @resulting_sources_container = @pool.compile_package(@package)
       @resulting_sources = post_process(@resulting_sources, options[:postproc]) if options[:postproc]
       @package_content = compile_package(@resulting_sources)
-      package_filename = File.join(@output_dir, @package.filename)
 
       if options[:compress]
-        File.open(package_filename.chomp(".js") + ".min.js", 'w') do |f|
-          f.write compress_package(@package_content)
-        end
+        @compressed_content = compress_package(@package_content)
       end
 
-      File.open(package_filename, 'w') {|f| f << @package_content  }
+      if !options[:output_to_stdout]
+        package_filename = File.join(@output_dir, @package.filename)
+        if @compressed_content
+          File.open(package_filename.chomp(".js") + ".min.js", 'w') do |f|
+            f.puts @compressed_content
+          end
+        end
+        File.open(package_filename, 'w') {|f| f << @package_content  }
+      else
+        $stdout.puts(@compressed_content || @package_content)
+      end
 
       generate_supplemental_files
       validate_sources
@@ -123,7 +130,7 @@ EOF
       else
         @compression_ratio = 1.00
         Jsus.logger.error "YUI compressor could not parse input. \n" <<
-                          "Compressor command used: #{compressor.command.join(' ')}"
+                          "Compressor method used: #{compression_method}"
       end
       checkpoint(:compress)
 
