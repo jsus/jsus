@@ -1,4 +1,10 @@
 = Jsus Changelog
+== Version 0.4.1
+CLI changes:
+* --no-deep-recurse flag for dependencies-as-submodules
+* Jsus tries to output to stdout by default, making it possible to chain
+  unix calls. Logging goes to stderr.
+
 == Version 0.4.0
 Other changes:
 * Redesigned class interaction API, trying to avoid cyclic dependencies at all
