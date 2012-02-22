@@ -24,7 +24,7 @@ group :development do
     gem "ruby-debug",   :platforms => :mri_18
   end
 
-  gem 'fssm'
+  gem 'listen', ">= 0.3.1"
 
   gem 'yuicompressor',    :require => false
   gem 'uglifier',         :require => false
