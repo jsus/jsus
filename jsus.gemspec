@@ -4,14 +4,15 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = "jsus"
+  s.name = %q{jsus}
   s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mark Abramov"]
-  s.date = "2012-02-22"
-  s.description = "Javascript packager and dependency resolver"
-  s.email = "markizko@gmail.com"
+  s.date = %q{2011-11-01}
+  s.default_executable = %q{jsus}
+  s.description = %q{Javascript packager and dependency resolver}
+  s.email = %q{markizko@gmail.com}
   s.executables = ["jsus"]
   s.extra_rdoc_files = [
     "README.md",
@@ -81,10 +82,10 @@ Gem::Specification.new do |s|
     "features/data/Postprocessing/MootoolsCompat12/package.yml",
     "features/data/Postprocessing/MootoolsLtIE8/Source/Core.js",
     "features/data/Postprocessing/MootoolsLtIE8/package.yml",
-    "features/data/Replacements/Dependencies/Mootools/Source/Core.js",
-    "features/data/Replacements/Dependencies/Mootools/package.yml",
-    "features/data/Replacements/Dependencies/MootoolsFork/Replacements/MootoolsCore.js",
-    "features/data/Replacements/Dependencies/MootoolsFork/package.yml",
+    "features/data/Replacements/Mootools/Source/Core.js",
+    "features/data/Replacements/Mootools/package.yml",
+    "features/data/Replacements/MootoolsFork/Replacements/MootoolsCore.js",
+    "features/data/Replacements/MootoolsFork/package.yml",
     "features/data/Replacements/Source/Library/Color.js",
     "features/data/Replacements/package.yml",
     "features/data/compression.min.js",
@@ -199,22 +200,6 @@ Gem::Specification.new do |s|
     "spec/data/OutsideDependencies/app/javascripts/Orwik/Source/Widget/Input/Input.js",
     "spec/data/OutsideDependencies/app/javascripts/Orwik/Source/Widget/Widget.js",
     "spec/data/OutsideDependencies/app/javascripts/Orwik/package.yml",
-    "spec/data/RecursivePackage/Basic/Output/raptor.js",
-    "spec/data/RecursivePackage/Basic/Output/scripts.json",
-    "spec/data/RecursivePackage/Basic/README",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Output/raptor.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Output/scripts.json",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/README",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Raptor/Source/Library/Color.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Raptor/Source/Widget/Input/Input.Color.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Raptor/Source/Widget/Input/Input.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Raptor/Source/Widget/Widget.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Basic/Raptor/package.yml",
-    "spec/data/RecursivePackage/Basic/Raptor/Source/Library/Color.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Source/Widget/Input/Input.Color.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Source/Widget/Input/Input.js",
-    "spec/data/RecursivePackage/Basic/Raptor/Source/Widget/Widget.js",
-    "spec/data/RecursivePackage/Basic/Raptor/package.yml",
     "spec/data/SimpleSources/dependent_source_one.js",
     "spec/data/SimpleSources/replacement_source_one.js",
     "spec/data/SimpleSources/simple_source_one.js",
@@ -253,11 +238,11 @@ Gem::Specification.new do |s|
     "spec/shared/mixins_segs.rb",
     "spec/spec_helper.rb"
   ]
-  s.homepage = "http://github.com/jsus/jsus"
+  s.homepage = %q{http://github.com/jsus/jsus}
   s.licenses = ["Public Domain"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.15"
-  s.summary = "Javascript packager and dependency resolver"
+  s.rubygems_version = %q{1.6.2}
+  s.summary = %q{Javascript packager and dependency resolver}
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
@@ -274,7 +259,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<ruby-debug19>, [">= 0"])
       s.add_development_dependency(%q<linecache>, ["= 0.45"])
       s.add_development_dependency(%q<ruby-debug>, [">= 0"])
-      s.add_development_dependency(%q<listen>, [">= 0.3.1"])
+      s.add_development_dependency(%q<fssm>, [">= 0"])
       s.add_development_dependency(%q<yuicompressor>, [">= 0"])
       s.add_development_dependency(%q<uglifier>, [">= 0"])
       s.add_development_dependency(%q<front-compiler>, [">= 0"])
@@ -294,7 +279,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<ruby-debug19>, [">= 0"])
       s.add_dependency(%q<linecache>, ["= 0.45"])
       s.add_dependency(%q<ruby-debug>, [">= 0"])
-      s.add_dependency(%q<listen>, [">= 0.3.1"])
+      s.add_dependency(%q<fssm>, [">= 0"])
       s.add_dependency(%q<yuicompressor>, [">= 0"])
       s.add_dependency(%q<uglifier>, [">= 0"])
       s.add_dependency(%q<front-compiler>, [">= 0"])
@@ -315,7 +300,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<ruby-debug19>, [">= 0"])
     s.add_dependency(%q<linecache>, ["= 0.45"])
     s.add_dependency(%q<ruby-debug>, [">= 0"])
-    s.add_dependency(%q<listen>, [">= 0.3.1"])
+    s.add_dependency(%q<fssm>, [">= 0"])
     s.add_dependency(%q<yuicompressor>, [">= 0"])
     s.add_dependency(%q<uglifier>, [">= 0"])
     s.add_dependency(%q<front-compiler>, [">= 0"])

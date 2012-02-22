@@ -5,7 +5,9 @@ require 'fileutils'
 #    * main thread is set as a timeout thread. it launches some child threads
 #      and goes to sleep until woken up or timed out
 #
-#    * Listen thread watches for filesystem updates
+#    * FSSM thread watches for filesystem updates
+#      Note: there is a 1 second delay after FSSM launch, it can be slow even
+#            on fast enough systems
 #
 describe Jsus::Util::Watcher do
   let(:directory) { File.expand_path("spec/tmp/watcher") }
@@ -24,21 +26,18 @@ describe Jsus::Util::Watcher do
     def watch(directory, callback_countdown = 1, ignored_dirs = [], &block)
       @main_thread = Thread.current
       @watcher_thread = Thread.new do
-        @watcher = described_class.new(directory, ignored_dirs) do |*args|
+        described_class.watch(directory, ignored_dirs) do |*args|
           yield(*args)
           callback_countdown -= 1
           @main_thread.wakeup if callback_countdown <= 0
         end
-        sleep
       end
       @watcher_thread.abort_on_exception = true
-      sleep(0.1)
+      sleep(1) # give it some time to init
     end # watch
 
-    def stop_watching(timeout = 1)
+    def stop_watching(timeout = 5)
       sleep(timeout) if timeout && timeout > 0
-      @watcher.listeners.each(&:stop)
-      @watcher.threads.each(&:kill)
       @watcher_thread.kill
     end # stop_watching
 
@@ -53,10 +52,10 @@ describe Jsus::Util::Watcher do
 
     it "should trigger the callback on file update" do
       File.open(watched_file, "w+") {|f| f << "var Hello = 1;"}
-      @callback_called.should be_false
       watch(directory) do
         @callback_called = true
       end
+      @callback_called.should be_false
       File.open(watched_file, "a+") {|f| f << "var World = 2;"}
       stop_watching
       @callback_called.should be_true
@@ -64,10 +63,10 @@ describe Jsus::Util::Watcher do
 
     it "should trigger the callback on file removal" do
       File.open(watched_file, "w+") {|f| f << "var Hello = 1;"}
-      @callback_called.should be_false
       watch(directory) do
         @callback_called = true
       end
+      @callback_called.should be_false
       FileUtils.rm_f(watched_file)
       stop_watching
       @callback_called.should be_true
@@ -121,10 +120,10 @@ describe Jsus::Util::Watcher do
     end
 
     it "should ignore ignored dirs" do
+      FileUtils.mkdir_p("#{directory}/output")
       watch(directory, 1, ["#{directory}/output"]) do
         @callback_called = true
       end
-      FileUtils.mkdir_p("#{directory}/output")
       File.open("#{directory}/output/out.js", "w+") {|f| f.puts "Hello, world" }
       stop_watching
       @callback_called.should be_false
