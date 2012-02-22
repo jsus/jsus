@@ -34,6 +34,7 @@ class Jsus::Util::Watcher
                         ignore(*@ignored_dirs).
                         latency(0.1).
                         change {|*paths| watch_callback(dir, *paths) }
+      listener.force_polling(true) if RUBY_ENGINE[/jruby/] || RUBY_ENGINE[/rbx/]
       @listeners << listener
       listener_thread = Thread.new { listener.start }
       listener_thread.abort_on_exception = true
@@ -68,7 +69,7 @@ class Jsus::Util::Watcher
         Jsus.logger.error "\t#{e.backtrace.join("\n\t")}" if Jsus.verbose?
         Jsus.logger.error "Compilation FAILED."
       ensure
-        @semaphore.unlock
+        @semaphore.unlock if @semaphore.locked?
       end
     end
   end # run

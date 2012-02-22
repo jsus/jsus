@@ -21,6 +21,7 @@ describe Jsus::Util::Watcher do
 
   describe ".watch" do
     let(:watched_file) { "#{directory}/hello.js" }
+
     def watch(directory, callback_countdown = 1, ignored_dirs = [], &block)
       @main_thread = Thread.current
       @watcher_thread = Thread.new do
@@ -32,13 +33,13 @@ describe Jsus::Util::Watcher do
         sleep
       end
       @watcher_thread.abort_on_exception = true
-      sleep(0.1)
+      sleep(1)
     end # watch
 
     def stop_watching(timeout = 1)
       sleep(timeout) if timeout && timeout > 0
       @watcher.listeners.each(&:stop)
-      @watcher.threads.each(&:kill)
+      # @watcher.threads.each(&:kill)
       @watcher_thread.kill
     end # stop_watching
 
@@ -121,10 +122,10 @@ describe Jsus::Util::Watcher do
     end
 
     it "should ignore ignored dirs" do
+      FileUtils.mkdir_p("#{directory}/output")
       watch(directory, 1, ["#{directory}/output"]) do
         @callback_called = true
       end
-      FileUtils.mkdir_p("#{directory}/output")
       File.open("#{directory}/output/out.js", "w+") {|f| f.puts "Hello, world" }
       stop_watching
       @callback_called.should be_false
